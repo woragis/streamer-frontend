@@ -111,7 +111,7 @@ export const defaultStreamState: StreamState = {
 
   recentProblems: [
     { id: 146, title: 'LRU Cache', done: true, difficulty: 'medium' },
-    { id: 42, title: 'Trapping Rain Water', done: true, difficulty: 'hard' },
+    { id: 199, title: 'Binary Tree Right Side View', done: true, difficulty: 'medium' },
     { id: 239, title: 'Sliding Window Maximum', done: false, difficulty: 'hard' },
   ],
 
@@ -174,9 +174,9 @@ class Solution:
   motto: 'FOCUS • DISCIPLINE • CONSISTENCY',
   calisthenicsMotto: 'DISCIPLINE TODAY FREEDOM TOMORROW',
 
-  latestSubscriber: 'NewCoder42',
-  latestFollower: 'DevFan99',
-  latestDonation: '$5 from Anonymous',
+  latestSubscriber: 'code_with_me',
+  latestFollower: 'algorithm_lover',
+  latestDonation: 'Anonymous - $10',
 
   brbMessage: "I'LL BE BACK IN",
   startingSoonSubtext: 'SOLVING PROBLEMS • IMPROVING EVERY DAY • BECOMING 1% BETTER',
