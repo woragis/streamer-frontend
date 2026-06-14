@@ -1,11 +1,34 @@
 import { Link } from '@tanstack/react-router'
-import { patchStreamState, streamStore } from '@/stores/stream-store'
-import { useStreamState } from '@/hooks/useStreamStore'
+import { dispatch, resetStoreToDefaults } from '@/stores/app-store'
+import { STORAGE_KEY } from '@/stores/persistence'
+import { useAppState, useTimerDisplay } from '@/hooks/useAppStore'
+import { useProgressToday, useWeekGoal } from '@/hooks/useOverlayData'
 import { ObsPreview } from '@/components/shared/ObsCanvas'
 import { StartingSoonPage, BrbPage, MainCodingPage, WhiteboardPage } from '@/routes/codes/pages'
 import { CalisthenicsMainPage } from '@/routes/calisthenics/pages'
-import { defaultStreamState } from '@/stores/types'
-import { persistState, STORAGE_KEY } from '@/stores/persistence'
+import type { Difficulty, Scene, TimerId } from '@/stores/types'
+import { TIMER_IDS } from '@/stores/timers'
+import {
+  addExercise,
+  addPlanItem,
+  addProblem,
+  completeRep,
+  completeSet,
+  goLive,
+  markProblemSolved,
+  pauseTimer,
+  removePlanItem,
+  removeProblem,
+  resetTimer,
+  setActiveProblem,
+  setScene,
+  setTimerPreset,
+  startTimer,
+  togglePlanItem,
+  updatePlanItemLabel,
+  updateProblem,
+} from '@/stores/actions'
+import { selectSortedPlan } from '@/stores/selectors'
 
 const codesRoutes = [
   { path: '/codes/starting-soon', label: 'Starting Soon' },
@@ -16,15 +39,23 @@ const codesRoutes = [
 
 const calRoutes = [{ path: '/calisthenics/main', label: 'Main Workout' }]
 
-export function ControlPage() {
-  const state = useStreamState()
+const scenes: { id: Scene; label: string }[] = [
+  { id: 'offline', label: 'Offline' },
+  { id: 'starting-soon', label: 'Starting Soon' },
+  { id: 'live', label: 'Live' },
+  { id: 'brb', label: 'BRB' },
+  { id: 'whiteboard', label: 'Whiteboard' },
+  { id: 'workout', label: 'Workout' },
+]
 
-  const set = (partial: Parameters<typeof patchStreamState>[0]) => patchStreamState(partial)
+export function ControlPage() {
+  const state = useAppState()
+  const progressToday = useProgressToday()
+  const weekGoal = useWeekGoal()
 
   const resetAll = () => {
     localStorage.removeItem(STORAGE_KEY)
-    streamStore.setState(() => ({ ...defaultStreamState }))
-    persistState(defaultStreamState)
+    resetStoreToDefaults()
   }
 
   return (
@@ -32,24 +63,47 @@ export function ControlPage() {
       <header className="border-b border-slate-800 px-8 py-6">
         <h1 className="text-2xl font-bold">Woragis Stream Control</h1>
         <p className="mt-1 text-sm text-slate-400">
-          Edite o estado aqui — persiste no localStorage e sincroniza com as telas OBS.
-          Use <code className="text-codes-accent">?obs=1</code> na URL para modo overlay.
+          TanStack Store + localStorage — sincroniza entre /control e todas as cenas OBS.
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 p-8 xl:grid-cols-2">
         <section className="space-y-6">
-          <Panel title="Rotas OBS — WoragisCodes">
-            <ul className="space-y-2">
-              {codesRoutes.map((r) => (
-                <RouteLink key={r.path} path={r.path} label={r.label} />
+          <Panel title="Cena ativa">
+            <div className="flex flex-wrap gap-2">
+              {scenes.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => dispatch((st) => setScene(st, s.id))}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    state.session.scene === s.id
+                      ? 'bg-codes-accent text-white'
+                      : 'bg-slate-800 text-slate-300'
+                  }`}
+                >
+                  {s.label}
+                </button>
               ))}
-            </ul>
+            </div>
+            <button
+              type="button"
+              className="mt-3 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold"
+              onClick={() => dispatch(goLive)}
+            >
+              Go Live (start stream timer)
+            </button>
           </Panel>
 
-          <Panel title="Rotas OBS — WoragisCalisthenics">
+          <Panel title="Timers">
+            {TIMER_IDS.map((id) => (
+              <TimerControl key={id} id={id} />
+            ))}
+          </Panel>
+
+          <Panel title="Rotas OBS">
             <ul className="space-y-2">
-              {calRoutes.map((r) => (
+              {[...codesRoutes, ...calRoutes].map((r) => (
                 <RouteLink key={r.path} path={r.path} label={r.label} />
               ))}
             </ul>
@@ -59,425 +113,293 @@ export function ControlPage() {
             <Field label="Brand Title">
               <input
                 className={inputClass}
-                value={state.brandTitle}
-                onChange={(e) => set({ brandTitle: e.target.value })}
+                value={state.branding.brandTitle}
+                onChange={(e) =>
+                  dispatch((s) => ({ ...s, branding: { ...s.branding, brandTitle: e.target.value } }))
+                }
               />
             </Field>
             <Field label="Handle">
               <input
                 className={inputClass}
-                value={state.handle}
-                onChange={(e) => set({ handle: e.target.value })}
-              />
-            </Field>
-            <Field label="Motto (Codes)">
-              <input
-                className={inputClass}
-                value={state.motto}
-                onChange={(e) => set({ motto: e.target.value })}
-              />
-            </Field>
-            <Field label="Motto (Calisthenics)">
-              <input
-                className={inputClass}
-                value={state.calisthenicsMotto}
-                onChange={(e) => set({ calisthenicsMotto: e.target.value })}
-              />
-            </Field>
-          </Panel>
-
-          <Panel title="Social">
-            <Field label="Discord">
-              <input
-                className={inputClass}
-                value={state.discord}
-                onChange={(e) => set({ discord: e.target.value })}
-              />
-            </Field>
-            <Field label="Twitter">
-              <input
-                className={inputClass}
-                value={state.twitter}
-                onChange={(e) => set({ twitter: e.target.value })}
+                value={state.branding.handle}
+                onChange={(e) =>
+                  dispatch((s) => ({ ...s, branding: { ...s.branding, handle: e.target.value } }))
+                }
               />
             </Field>
             <Field label="Schedule">
               <input
                 className={inputClass}
-                value={state.schedule}
-                onChange={(e) => set({ schedule: e.target.value })}
-              />
-            </Field>
-          </Panel>
-
-          <Panel title="Timers">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Stream Time (seconds)">
-                <NumberInput
-                  value={state.streamTimeSeconds}
-                  onChange={(v) => set({ streamTimeSeconds: v })}
-                />
-              </Field>
-              <Field label="Stream Timer Running">
-                <Toggle
-                  checked={state.streamTimeRunning}
-                  onChange={(v) => set({ streamTimeRunning: v })}
-                />
-              </Field>
-              <Field label="Starting Soon (sec)">
-                <NumberInput
-                  value={state.startingSoonCountdown}
-                  onChange={(v) => set({ startingSoonCountdown: v })}
-                />
-              </Field>
-              <Field label="Starting Soon Running">
-                <Toggle
-                  checked={state.startingSoonRunning}
-                  onChange={(v) => set({ startingSoonRunning: v })}
-                />
-              </Field>
-              <Field label="BRB Countdown (sec)">
-                <NumberInput
-                  value={state.brbCountdown}
-                  onChange={(v) => set({ brbCountdown: v })}
-                />
-              </Field>
-              <Field label="BRB Running">
-                <Toggle
-                  checked={state.brbRunning}
-                  onChange={(v) => set({ brbRunning: v })}
-                />
-              </Field>
-              <Field label="Rest Timer (sec)">
-                <NumberInput
-                  value={state.restTimerSeconds}
-                  onChange={(v) => set({ restTimerSeconds: v })}
-                />
-              </Field>
-              <Field label="Rest Timer Running">
-                <Toggle
-                  checked={state.restTimerRunning}
-                  onChange={(v) => set({ restTimerRunning: v })}
-                />
-              </Field>
-              <Field label="Loading Progress (%)">
-                <NumberInput
-                  value={state.loadingProgress}
-                  onChange={(v) => set({ loadingProgress: v })}
-                />
-              </Field>
-            </div>
-          </Panel>
-
-          <Panel title="Progress & Goals">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Today Current">
-                <NumberInput
-                  value={state.progressToday.current}
-                  onChange={(v) =>
-                    set({ progressToday: { ...state.progressToday, current: v } })
-                  }
-                />
-              </Field>
-              <Field label="Today Target">
-                <NumberInput
-                  value={state.progressToday.target}
-                  onChange={(v) =>
-                    set({ progressToday: { ...state.progressToday, target: v } })
-                  }
-                />
-              </Field>
-              <Field label="Week Current">
-                <NumberInput
-                  value={state.weekGoal.current}
-                  onChange={(v) => set({ weekGoal: { ...state.weekGoal, current: v } })}
-                />
-              </Field>
-              <Field label="Week Target">
-                <NumberInput
-                  value={state.weekGoal.target}
-                  onChange={(v) => set({ weekGoal: { ...state.weekGoal, target: v } })}
-                />
-              </Field>
-              <Field label="Streak (days)">
-                <NumberInput value={state.streak} onChange={(v) => set({ streak: v })} />
-              </Field>
-            </div>
-          </Panel>
-
-          <Panel title="Current Problem">
-            <Field label="ID">
-              <NumberInput
-                value={state.currentProblem.id}
-                onChange={(v) =>
-                  set({ currentProblem: { ...state.currentProblem, id: v } })
-                }
-              />
-            </Field>
-            <Field label="Title">
-              <input
-                className={inputClass}
-                value={state.currentProblem.title}
+                value={state.branding.schedule}
                 onChange={(e) =>
-                  set({ currentProblem: { ...state.currentProblem, title: e.target.value } })
-                }
-              />
-            </Field>
-            <Field label="Difficulty">
-              <select
-                className={inputClass}
-                value={state.currentProblem.difficulty}
-                onChange={(e) =>
-                  set({
-                    currentProblem: {
-                      ...state.currentProblem,
-                      difficulty: e.target.value as 'easy' | 'medium' | 'hard',
-                    },
-                  })
-                }
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </Field>
-            <Field label="Description">
-              <textarea
-                className={`${inputClass} min-h-[80px]`}
-                value={state.currentProblem.description}
-                onChange={(e) =>
-                  set({
-                    currentProblem: { ...state.currentProblem, description: e.target.value },
-                  })
+                  dispatch((s) => ({ ...s, branding: { ...s.branding, schedule: e.target.value } }))
                 }
               />
             </Field>
           </Panel>
 
-          <Panel title="Code Editor">
-            <Field label="File Name">
-              <input
-                className={inputClass}
-                value={state.codeFileName}
-                onChange={(e) => set({ codeFileName: e.target.value })}
-              />
-            </Field>
-            <Field label="Content">
-              <textarea
-                className={`${inputClass} min-h-[200px] font-mono text-xs`}
-                value={state.codeContent}
-                onChange={(e) => set({ codeContent: e.target.value })}
-              />
-            </Field>
-          </Panel>
-
-          <Panel title="Whiteboard">
-            <Field label="Title">
-              <input
-                className={inputClass}
-                value={state.whiteboardTitle}
-                onChange={(e) => set({ whiteboardTitle: e.target.value })}
-              />
-            </Field>
-            <Field label="Bullets (one per line)">
-              <textarea
-                className={`${inputClass} min-h-[100px]`}
-                value={state.whiteboardBullets.join('\n')}
-                onChange={(e) =>
-                  set({ whiteboardBullets: e.target.value.split('\n').filter(Boolean) })
-                }
-              />
-            </Field>
-            <Field label="Notes (one per line)">
-              <textarea
-                className={`${inputClass} min-h-[80px]`}
-                value={state.whiteboardNotes.join('\n')}
-                onChange={(e) =>
-                  set({ whiteboardNotes: e.target.value.split('\n').filter(Boolean) })
-                }
-              />
-            </Field>
-            <Field label="Current Approach">
-              <input
-                className={inputClass}
-                value={state.currentApproach}
-                onChange={(e) => set({ currentApproach: e.target.value })}
-              />
-            </Field>
-          </Panel>
-
-          <Panel title="Today's Plan">
-            {state.todayPlan.map((item, i) => (
+          <Panel title={`Today's Plan (${selectSortedPlan(state).length})`}>
+            {selectSortedPlan(state).map((item) => (
               <div key={item.id} className="mb-2 flex gap-2">
                 <input
                   className={`${inputClass} flex-1`}
                   value={item.label}
-                  onChange={(e) => {
-                    const todayPlan = [...state.todayPlan]
-                    todayPlan[i] = { ...item, label: e.target.value }
-                    set({ todayPlan })
-                  }}
+                  onChange={(e) =>
+                    dispatch((s) => updatePlanItemLabel(s, item.id, e.target.value))
+                  }
                 />
-                <label className="flex items-center gap-1 text-xs">
-                  <input
-                    type="checkbox"
-                    checked={item.done}
-                    onChange={(e) => {
-                      const todayPlan = [...state.todayPlan]
-                      todayPlan[i] = { ...item, done: e.target.checked }
-                      set({ todayPlan })
-                    }}
-                  />
-                  Done
-                </label>
+                <button
+                  type="button"
+                  className="rounded bg-slate-700 px-2 text-xs"
+                  onClick={() => dispatch((s) => togglePlanItem(s, item.id))}
+                >
+                  {item.done ? '✓' : '○'}
+                </button>
+                <button
+                  type="button"
+                  className="rounded bg-red-900/50 px-2 text-xs text-red-300"
+                  onClick={() => dispatch((s) => removePlanItem(s, item.id))}
+                >
+                  ×
+                </button>
               </div>
             ))}
+            <AddRow
+              placeholder="Novo item do plano"
+              onAdd={(label) => dispatch((s) => addPlanItem(s, label))}
+            />
           </Panel>
 
-          <Panel title="Recent Problems">
-            {state.recentProblems.map((p, i) => (
-              <div key={p.id} className="mb-2 flex gap-2">
-                <input
-                  className={`${inputClass} w-16`}
-                  value={p.id}
-                  type="number"
-                  onChange={(e) => {
-                    const recentProblems = [...state.recentProblems]
-                    recentProblems[i] = { ...p, id: Number(e.target.value) }
-                    set({ recentProblems })
-                  }}
-                />
-                <input
-                  className={`${inputClass} flex-1`}
-                  value={p.title}
-                  onChange={(e) => {
-                    const recentProblems = [...state.recentProblems]
-                    recentProblems[i] = { ...p, title: e.target.value }
-                    set({ recentProblems })
-                  }}
-                />
-                <label className="flex items-center gap-1 text-xs">
+          <Panel title={`Problems (${state.codes.problems.length})`}>
+            <p className="mb-2 text-xs text-slate-500">
+              Progress today: {progressToday.current}/{progressToday.target} · Week:{' '}
+              {weekGoal.current}/{weekGoal.target}
+            </p>
+            {state.codes.problems.map((p) => (
+              <div key={p.id} className="mb-3 rounded-lg border border-slate-800 p-3">
+                <div className="mb-2 flex gap-2">
                   <input
-                    type="checkbox"
-                    checked={p.done}
-                    onChange={(e) => {
-                      const recentProblems = [...state.recentProblems]
-                      recentProblems[i] = { ...p, done: e.target.checked }
-                      set({ recentProblems })
-                    }}
+                    className={`${inputClass} w-20`}
+                    type="number"
+                    value={p.id}
+                    readOnly
                   />
-                  Done
-                </label>
+                  <input
+                    className={`${inputClass} flex-1`}
+                    value={p.title}
+                    onChange={(e) =>
+                      dispatch((s) => updateProblem(s, p.id, { title: e.target.value }))
+                    }
+                  />
+                  <select
+                    className={inputClass}
+                    value={p.status}
+                    onChange={(e) => {
+                      const status = e.target.value as typeof p.status
+                      if (status === 'active') dispatch((s) => setActiveProblem(s, p.id))
+                      else if (status === 'solved') dispatch((s) => markProblemSolved(s, p.id))
+                      else
+                        dispatch((s) => ({
+                          ...s,
+                          codes: {
+                            ...s.codes,
+                            problems: s.codes.problems.map((x) =>
+                              x.id === p.id ? { ...x, status } : x,
+                            ),
+                          },
+                        }))
+                    }}
+                  >
+                    <option value="queued">queued</option>
+                    <option value="active">active</option>
+                    <option value="solved">solved</option>
+                    <option value="skipped">skipped</option>
+                  </select>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    className="rounded bg-emerald-800 px-2 py-1 text-xs"
+                    onClick={() => dispatch((s) => markProblemSolved(s, p.id))}
+                  >
+                    Mark solved
+                  </button>
+                  <button
+                    type="button"
+                    className="rounded bg-red-900/50 px-2 py-1 text-xs text-red-300"
+                    onClick={() => dispatch((s) => removeProblem(s, p.id))}
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
             ))}
+            <AddProblemForm
+              onAdd={(data) => dispatch((s) => addProblem(s, data))}
+            />
           </Panel>
 
-          <Panel title="Calisthenics">
-            <div className="grid grid-cols-2 gap-4">
-              <Field label="Workout Type">
-                <input
-                  className={inputClass}
-                  value={state.workoutType}
-                  onChange={(e) => set({ workoutType: e.target.value })}
-                />
-              </Field>
-              <Field label="Current Exercise">
-                <input
-                  className={inputClass}
-                  value={state.currentExercise}
-                  onChange={(e) => set({ currentExercise: e.target.value })}
-                />
-              </Field>
-              <Field label="Set Current">
+          <Panel title="Goals">
+            <div className="grid grid-cols-3 gap-3">
+              <Field label="Daily target">
                 <NumberInput
-                  value={state.currentSet.current}
+                  value={state.codes.goals.dailyTarget}
                   onChange={(v) =>
-                    set({ currentSet: { ...state.currentSet, current: v } })
+                    dispatch((s) => ({
+                      ...s,
+                      codes: { ...s.codes, goals: { ...s.codes.goals, dailyTarget: v } },
+                    }))
                   }
                 />
               </Field>
-              <Field label="Set Total">
+              <Field label="Weekly target">
                 <NumberInput
-                  value={state.currentSet.total}
-                  onChange={(v) => set({ currentSet: { ...state.currentSet, total: v } })}
-                />
-              </Field>
-              <Field label="Reps Current">
-                <NumberInput
-                  value={state.currentReps.current}
+                  value={state.codes.goals.weeklyTarget}
                   onChange={(v) =>
-                    set({ currentReps: { ...state.currentReps, current: v } })
+                    dispatch((s) => ({
+                      ...s,
+                      codes: { ...s.codes, goals: { ...s.codes.goals, weeklyTarget: v } },
+                    }))
                   }
                 />
               </Field>
-              <Field label="Reps Target">
+              <Field label="Streak">
                 <NumberInput
-                  value={state.currentReps.target}
+                  value={state.codes.goals.streak}
                   onChange={(v) =>
-                    set({ currentReps: { ...state.currentReps, target: v } })
+                    dispatch((s) => ({
+                      ...s,
+                      codes: { ...s.codes, goals: { ...s.codes.goals, streak: v } },
+                    }))
                   }
-                />
-              </Field>
-              <Field label="Total Reps">
-                <NumberInput value={state.totalReps} onChange={(v) => set({ totalReps: v })} />
-              </Field>
-              <Field label="Goal Progress (%)">
-                <NumberInput
-                  value={state.todayGoalProgress}
-                  onChange={(v) => set({ todayGoalProgress: v })}
-                />
-              </Field>
-              <Field label="Goal Label">
-                <input
-                  className={inputClass}
-                  value={state.todayGoalLabel}
-                  onChange={(e) => set({ todayGoalLabel: e.target.value })}
-                />
-              </Field>
-              <Field label="Up Next Exercise">
-                <input
-                  className={inputClass}
-                  value={state.upNextExercise}
-                  onChange={(e) => set({ upNextExercise: e.target.value })}
-                />
-              </Field>
-              <Field label="Up Next Sets">
-                <NumberInput
-                  value={state.upNextSets}
-                  onChange={(v) => set({ upNextSets: v })}
                 />
               </Field>
             </div>
           </Panel>
 
+          <Panel title="Whiteboard & Code">
+            <Field label="Whiteboard title">
+              <input
+                className={inputClass}
+                value={state.codes.whiteboard.title}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    codes: {
+                      ...s.codes,
+                      whiteboard: { ...s.codes.whiteboard, title: e.target.value },
+                    },
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Approach">
+              <input
+                className={inputClass}
+                value={state.codes.whiteboard.approach}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    codes: {
+                      ...s.codes,
+                      whiteboard: { ...s.codes.whiteboard, approach: e.target.value },
+                    },
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Code file">
+              <input
+                className={inputClass}
+                value={state.codes.code.fileName}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    codes: { ...s.codes, code: { ...s.codes.code, fileName: e.target.value } },
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Code">
+              <textarea
+                className={`${inputClass} min-h-[120px] font-mono text-xs`}
+                value={state.codes.code.content}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    codes: { ...s.codes, code: { ...s.codes.code, content: e.target.value } },
+                  }))
+                }
+              />
+            </Field>
+          </Panel>
+
+          <Panel title="Calisthenics">
+            <Field label="Workout type">
+              <input
+                className={inputClass}
+                value={state.calisthenics.workoutType}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    calisthenics: { ...s.calisthenics, workoutType: e.target.value },
+                  }))
+                }
+              />
+            </Field>
+            {state.calisthenics.exercises.map((ex) => (
+              <div key={ex.id} className="mb-2 rounded border border-slate-800 p-2 text-sm">
+                <span className="font-semibold">{ex.name}</span>
+                <span className="ml-2 text-slate-500">
+                  {ex.status} · set {ex.completedSets + 1}/{ex.sets} · reps{' '}
+                  {ex.repsInCurrentSet}/{ex.repTarget}
+                </span>
+              </div>
+            ))}
+            <div className="mt-2 flex gap-2">
+              <button
+                type="button"
+                className="rounded bg-codes-accent px-3 py-1.5 text-xs font-bold"
+                onClick={() => dispatch(completeRep)}
+              >
+                +1 Rep
+              </button>
+              <button
+                type="button"
+                className="rounded bg-slate-700 px-3 py-1.5 text-xs"
+                onClick={() => dispatch(completeSet)}
+              >
+                Complete Set
+              </button>
+            </div>
+            <AddExerciseForm onAdd={(d) => dispatch((s) => addExercise(s, d))} />
+          </Panel>
+
           <Panel title="Stream Events">
-            <Field label="Latest Subscriber">
-              <input
-                className={inputClass}
-                value={state.latestSubscriber}
-                onChange={(e) => set({ latestSubscriber: e.target.value })}
-              />
-            </Field>
-            <Field label="Latest Follower">
-              <input
-                className={inputClass}
-                value={state.latestFollower}
-                onChange={(e) => set({ latestFollower: e.target.value })}
-              />
-            </Field>
-            <Field label="Latest Donation">
-              <input
-                className={inputClass}
-                value={state.latestDonation}
-                onChange={(e) => set({ latestDonation: e.target.value })}
-              />
-            </Field>
+            {(['latestSubscriber', 'latestFollower', 'latestDonation'] as const).map((key) => (
+              <Field key={key} label={key}>
+                <input
+                  className={inputClass}
+                  value={state.session.streamEvents[key]}
+                  onChange={(e) =>
+                    dispatch((s) => ({
+                      ...s,
+                      session: {
+                        ...s.session,
+                        streamEvents: { ...s.session.streamEvents, [key]: e.target.value },
+                      },
+                    }))
+                  }
+                />
+              </Field>
+            ))}
           </Panel>
 
           <button
             type="button"
             onClick={resetAll}
-            className="rounded-lg border border-red-500/50 px-4 py-2 text-sm text-red-400 hover:bg-red-500/10"
+            className="rounded-lg border border-red-500/50 px-4 py-2 text-sm text-red-400"
           >
             Reset to defaults
           </button>
@@ -497,12 +419,136 @@ export function ControlPage() {
           <ObsPreview label="Whiteboard">
             <WhiteboardPage />
           </ObsPreview>
-          <ObsPreview label="Calisthenics Main">
+          <ObsPreview label="Calisthenics">
             <CalisthenicsMainPage />
           </ObsPreview>
         </section>
       </div>
     </div>
+  )
+}
+
+function TimerControl({ id }: { id: TimerId }) {
+  const timer = useTimerDisplay(id)
+  const config = useAppState().timers.timers[id]
+
+  return (
+    <div className="mb-4 rounded-lg border border-slate-800 bg-slate-900/50 p-3">
+      <div className="mb-2 flex items-center justify-between">
+        <span className="text-sm font-semibold capitalize">{id}</span>
+        <span className="font-mono text-lg">{timer.formatted}</span>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          className="rounded bg-codes-accent px-2 py-1 text-xs font-bold"
+          onClick={() => dispatch((s) => (timer.running ? pauseTimer(s, id) : startTimer(s, id)))}
+        >
+          {timer.running ? 'Pause' : 'Start'}
+        </button>
+        <button
+          type="button"
+          className="rounded bg-slate-700 px-2 py-1 text-xs"
+          onClick={() => dispatch((s) => resetTimer(s, id))}
+        >
+          Reset
+        </button>
+        {config.mode === 'countdown' && (
+          <>
+            {[300, 600, 1500].map((sec) => (
+              <button
+                key={sec}
+                type="button"
+                className="rounded bg-slate-800 px-2 py-1 text-xs"
+                onClick={() => dispatch((s) => setTimerPreset(s, id, sec))}
+              >
+                {sec / 60}m
+              </button>
+            ))}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function AddRow({ placeholder, onAdd }: { placeholder: string; onAdd: (v: string) => void }) {
+  return (
+    <form
+      className="mt-2 flex gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const fd = new FormData(e.currentTarget)
+        const v = String(fd.get('v') ?? '').trim()
+        if (v) onAdd(v)
+        e.currentTarget.reset()
+      }}
+    >
+      <input name="v" className={`${inputClass} flex-1`} placeholder={placeholder} />
+      <button type="submit" className="rounded bg-codes-accent px-3 text-sm font-bold">
+        Add
+      </button>
+    </form>
+  )
+}
+
+function AddProblemForm({
+  onAdd,
+}: {
+  onAdd: (d: { id: number; title: string; difficulty: Difficulty }) => void
+}) {
+  return (
+    <form
+      className="mt-3 flex flex-wrap gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const fd = new FormData(e.currentTarget)
+        const id = Number(fd.get('id'))
+        const title = String(fd.get('title') ?? '').trim()
+        const difficulty = String(fd.get('difficulty') ?? 'medium') as Difficulty
+        if (id && title) onAdd({ id, title, difficulty })
+        e.currentTarget.reset()
+      }}
+    >
+      <input name="id" type="number" className={`${inputClass} w-24`} placeholder="ID" />
+      <input name="title" className={`${inputClass} flex-1`} placeholder="Title" />
+      <select name="difficulty" className={inputClass}>
+        <option value="easy">easy</option>
+        <option value="medium">medium</option>
+        <option value="hard">hard</option>
+      </select>
+      <button type="submit" className="rounded bg-codes-accent px-3 text-sm font-bold">
+        Add
+      </button>
+    </form>
+  )
+}
+
+function AddExerciseForm({
+  onAdd,
+}: {
+  onAdd: (d: { name: string; sets: number; repTarget: number }) => void
+}) {
+  return (
+    <form
+      className="mt-3 flex flex-wrap gap-2"
+      onSubmit={(e) => {
+        e.preventDefault()
+        const fd = new FormData(e.currentTarget)
+        const name = String(fd.get('name') ?? '').trim()
+        const sets = Number(fd.get('sets') ?? 3)
+        const repTarget = Number(fd.get('reps') ?? 10)
+        if (name) onAdd({ name, sets, repTarget })
+        e.currentTarget.reset()
+      }}
+    >
+      <input name="name" className={`${inputClass} flex-1`} placeholder="Exercise" />
+      <input name="sets" type="number" className={`${inputClass} w-20`} placeholder="Sets" defaultValue={3} />
+      <input name="reps" type="number" className={`${inputClass} w-20`} placeholder="Reps" defaultValue={10} />
+      <button type="submit" className="rounded bg-cal-accent px-3 text-sm font-bold text-black">
+        Add
+      </button>
+    </form>
   )
 }
 
@@ -514,12 +560,7 @@ function RouteLink({ path, label }: { path: string; label: string }) {
         <Link to={path} className="text-xs text-codes-accent hover:underline">
           Preview
         </Link>
-        <a
-          href={`${path}?obs=1`}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs text-emerald-400 hover:underline"
-        >
+        <a href={`${path}?obs=1`} target="_blank" rel="noreferrer" className="text-xs text-emerald-400">
           OBS URL
         </a>
       </div>
@@ -530,9 +571,7 @@ function RouteLink({ path, label }: { path: string; label: string }) {
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-slate-800 bg-slate-900/50 p-5">
-      <h3 className="mb-4 text-sm font-bold tracking-wider text-slate-400 uppercase">
-        {title}
-      </h3>
+      <h3 className="mb-4 text-sm font-bold tracking-wider text-slate-400 uppercase">{title}</h3>
       {children}
     </div>
   )
@@ -550,30 +589,13 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputClass =
   'w-full rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none focus:border-codes-accent'
 
-function NumberInput({
-  value,
-  onChange,
-}: {
-  value: number
-  onChange: (v: number) => void
-}) {
+function NumberInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
   return (
     <input
       type="number"
       className={inputClass}
       value={value}
       onChange={(e) => onChange(Number(e.target.value))}
-    />
-  )
-}
-
-function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <input
-      type="checkbox"
-      checked={checked}
-      onChange={(e) => onChange(e.target.checked)}
-      className="h-4 w-4"
     />
   )
 }

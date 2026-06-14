@@ -1,7 +1,11 @@
 import { ObsCanvas } from '@/components/shared/ObsCanvas'
 import { useObsMode } from '@/hooks/useObsMode'
-import { useCountdown, useStreamTimer } from '@/hooks/useTimers'
-import { useStreamStore } from '@/hooks/useStreamStore'
+import {
+  useBrbTimer,
+  useCodesCopy,
+  useProgressToday,
+  useStartingSoonTimer,
+} from '@/hooks/useOverlayData'
 import {
   CodesShell,
   CountdownBox,
@@ -36,9 +40,8 @@ import {
 
 export function StartingSoonPage() {
   const obs = useObsMode()
-  useCountdown('startingSoonCountdown', 'startingSoonRunning')
-  const countdown = useStreamStore((s) => s.startingSoonCountdown)
-  const subtext = useStreamStore((s) => s.startingSoonSubtext)
+  const startingSoon = useStartingSoonTimer()
+  const subtext = useCodesCopy().startingSoonSubtext
 
   return (
     <ObsCanvas obs={obs}>
@@ -59,7 +62,7 @@ export function StartingSoonPage() {
               {subtext}
             </p>
             <div className="codes-widget-accent w-[420px] rounded-2xl px-10 py-8">
-              <CountdownBox label="Starting In" seconds={countdown} />
+              <CountdownBox label="Starting In" seconds={startingSoon.seconds} />
             </div>
             <SocialRow />
           </div>
@@ -79,11 +82,9 @@ export function StartingSoonPage() {
 
 export function BrbPage() {
   const obs = useObsMode()
-  useCountdown('brbCountdown', 'brbRunning')
-  const countdown = useStreamStore((s) => s.brbCountdown)
-  const subtext = useStreamStore((s) => s.brbSubtext)
-  const brbMessage = useStreamStore((s) => s.brbMessage)
-  const progressToday = useStreamStore((s) => s.progressToday)
+  const brb = useBrbTimer()
+  const copy = useCodesCopy()
+  const progressToday = useProgressToday()
 
   return (
     <ObsCanvas obs={obs}>
@@ -113,12 +114,12 @@ export function BrbPage() {
               Be Right <span className="text-codes-accent">Back</span>
             </h1>
             <p className="mb-8 text-[11px] tracking-[0.16em] text-codes-muted uppercase">
-              {subtext}
+              {copy.brbSubtext}
             </p>
             <div className="codes-widget-accent w-[400px] rounded-2xl px-8 py-7">
               <CountdownBox
-                label={brbMessage}
-                seconds={countdown}
+                label={copy.brbMessage}
+                seconds={brb.seconds}
                 showBar
                 totalSeconds={300}
               />
@@ -144,7 +145,6 @@ export function BrbPage() {
 
 export function MainCodingPage() {
   const obs = useObsMode()
-  useStreamTimer()
 
   return (
     <ObsCanvas obs={obs}>
@@ -167,7 +167,6 @@ export function MainCodingPage() {
 
 export function WhiteboardPage() {
   const obs = useObsMode()
-  useStreamTimer()
 
   return (
     <ObsCanvas obs={obs}>

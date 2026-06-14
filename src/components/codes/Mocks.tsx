@@ -1,4 +1,4 @@
-import { useStreamStore } from '@/hooks/useStreamStore'
+import { useCodesCode, useCurrentProblem, useWhiteboard } from '@/hooks/useOverlayData'
 import { DifficultyTag } from '@/components/codes/CodesLayout'
 import {
   IconThumbsUp,
@@ -9,7 +9,8 @@ import {
 } from '@/components/codes/Icons'
 
 export function LeetCodeMock() {
-  const problem = useStreamStore((s) => s.currentProblem)
+  const problem = useCurrentProblem()
+  if (!problem) return null
 
   return (
     <div className="codes-glow-border flex h-full flex-col overflow-hidden rounded-xl bg-codes-panel">
@@ -134,8 +135,7 @@ function BinaryTreeSvg() {
 }
 
 export function CodeEditorMock() {
-  const code = useStreamStore((s) => s.codeContent)
-  const fileName = useStreamStore((s) => s.codeFileName)
+  const { content: code, fileName } = useCodesCode()
   const lines = code.split('\n')
 
   return (
@@ -209,8 +209,7 @@ function SyntaxLine({ line }: { line: string }) {
 }
 
 export function WhiteboardMock() {
-  const title = useStreamStore((s) => s.whiteboardTitle)
-  const bullets = useStreamStore((s) => s.whiteboardBullets)
+  const { title, bullets } = useWhiteboard()
 
   return (
     <div className="codes-glow-border flex h-full flex-col overflow-hidden rounded-xl">
@@ -300,7 +299,7 @@ function WhiteboardDiagramSvg() {
 }
 
 export function NotesWidgetPanel() {
-  const notes = useStreamStore((s) => s.whiteboardNotes)
+  const { notes } = useWhiteboard()
   return (
     <div className="codes-widget p-3.5">
       <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-accent uppercase">
@@ -318,7 +317,7 @@ export function NotesWidgetPanel() {
 }
 
 export function ApproachWidget() {
-  const approach = useStreamStore((s) => s.currentApproach)
+  const { approach } = useWhiteboard()
   return (
     <div className="codes-widget-accent p-3.5">
       <div className="mb-1 flex items-center gap-2">
@@ -332,31 +331,39 @@ export function ApproachWidget() {
   )
 }
 
+import { dispatch } from '@/stores/app-store'
+import { pauseTimer, resetTimer, startTimer } from '@/stores/actions'
+import { useFocusTimer } from '@/hooks/useOverlayData'
+
 export function TimerWidget() {
+  const focus = useFocusTimer()
+
   return (
     <div className="codes-widget p-3.5">
       <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-accent uppercase">
         Timer
       </p>
-      <p className="mb-3 text-center font-mono text-[28px] font-bold text-white">--:--:--</p>
+      <p className="mb-3 text-center font-mono text-[28px] font-bold text-white">
+        {focus.formatted}
+      </p>
       <div className="flex gap-2">
         <button
           type="button"
           className="flex-1 rounded-md bg-codes-accent py-1.5 text-[11px] font-bold text-white"
+          onClick={() =>
+            dispatch((s) =>
+              focus.running ? pauseTimer(s, 'focus') : startTimer(s, 'focus'),
+            )
+          }
         >
-          START
+          {focus.running ? 'PAUSE' : 'START'}
         </button>
         <button
           type="button"
           className="flex-1 rounded-md border border-codes-border py-1.5 text-[11px] text-codes-muted"
+          onClick={() => dispatch((s) => resetTimer(s, 'focus'))}
         >
           RESET
-        </button>
-        <button
-          type="button"
-          className="rounded-md border border-codes-border px-2 text-codes-muted"
-        >
-          ⚙
         </button>
       </div>
     </div>

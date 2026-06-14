@@ -1,6 +1,18 @@
 import type { ReactNode } from 'react'
-import { useStreamStore } from '@/hooks/useStreamStore'
-import { formatStreamTime, formatCountdown } from '@/hooks/useTimers'
+import {
+  useBranding,
+  useCodesCopy,
+  useCodesGoals,
+  useCurrentProblem,
+  useLoadingProgress,
+  useProgressToday,
+  useRecentProblems,
+  useSession,
+  useStreamTimerDisplay,
+  useTodayPlan,
+  useWeekGoal,
+} from '@/hooks/useOverlayData'
+import { formatCountdown } from '@/hooks/useTimers'
 import type { Difficulty } from '@/stores/types'
 import {
   IconYouTube,
@@ -42,8 +54,7 @@ export function CodesHeader({
   status?: string
   statusDot?: 'live' | 'soon'
 }) {
-  const brandTitle = useStreamStore((s) => s.brandTitle)
-  const handle = useStreamStore((s) => s.handle)
+  const { brandTitle, handle } = useBranding()
 
   return (
     <header className="flex h-[48px] shrink-0 items-center justify-between border-b border-codes-border bg-codes-bg px-6">
@@ -193,7 +204,7 @@ export function ProblemList({
 }
 
 export function WeekGoalRing() {
-  const weekGoal = useStreamStore((s) => s.weekGoal)
+  const weekGoal = useWeekGoal()
   const pct = weekGoal.target > 0 ? (weekGoal.current / weekGoal.target) * 100 : 0
   const r = 38
   const c = 2 * Math.PI * r
@@ -309,7 +320,8 @@ export function BraceDecoration() {
 /* ─── Data-driven widgets ─── */
 
 export function CurrentProblemWidget() {
-  const p = useStreamStore((s) => s.currentProblem)
+  const p = useCurrentProblem()
+  if (!p) return null
   return (
     <Widget title="Current Problem" accent>
       <p className="mb-2 text-[13px] leading-snug font-semibold text-white">
@@ -321,7 +333,7 @@ export function CurrentProblemWidget() {
 }
 
 export function ProgressTodayWidget() {
-  const { current, target } = useStreamStore((s) => s.progressToday)
+  const { current, target } = useProgressToday()
   return (
     <Widget title="Progress Today">
       <p className="mb-1 text-[22px] font-bold text-white">
@@ -334,18 +346,18 @@ export function ProgressTodayWidget() {
 }
 
 export function StreamTimeWidget() {
-  const sec = useStreamStore((s) => s.streamTimeSeconds)
+  const stream = useStreamTimerDisplay()
   return (
     <Widget title="Stream Time" icon={<IconClock className="h-3.5 w-3.5" />}>
       <p className="font-mono text-[32px] font-bold tracking-wide text-white">
-        {formatStreamTime(sec)}
+        {stream.formatted}
       </p>
     </Widget>
   )
 }
 
 export function WeekGoalWidget() {
-  const g = useStreamStore((s) => s.weekGoal)
+  const g = useWeekGoal()
   return (
     <Widget title="Week Goal">
       <p className="mb-1 text-[22px] font-bold text-white">
@@ -358,9 +370,9 @@ export function WeekGoalWidget() {
 }
 
 export function StatsWidget() {
-  const progressToday = useStreamStore((s) => s.progressToday)
-  const weekGoal = useStreamStore((s) => s.weekGoal)
-  const streak = useStreamStore((s) => s.streak)
+  const progressToday = useProgressToday()
+  const weekGoal = useWeekGoal()
+  const streak = useCodesGoals().streak
   return (
     <Widget title="Stats">
       <div className="space-y-2.5 text-[12px]">
@@ -384,7 +396,7 @@ function Row({ label, value, highlight }: { label: string; value: string; highli
 }
 
 export function TodayPlanWidget() {
-  const items = useStreamStore((s) => s.todayPlan)
+  const items = useTodayPlan()
   return (
     <Widget title="Today's Plan">
       <Checklist items={items} />
@@ -393,7 +405,8 @@ export function TodayPlanWidget() {
 }
 
 export function LatestProblemWidget() {
-  const p = useStreamStore((s) => s.currentProblem)
+  const p = useCurrentProblem()
+  if (!p) return null
   return (
     <Widget title="Latest Problem">
       <p className="mb-2 text-[12px] font-semibold text-white">
@@ -405,7 +418,7 @@ export function LatestProblemWidget() {
 }
 
 export function ScheduleWidget() {
-  const schedule = useStreamStore((s) => s.schedule)
+  const schedule = useBranding().schedule
   return (
     <Widget title="Stream Schedule" icon={<IconCalendar className="h-3.5 w-3.5" />}>
       <p className="text-[12px] font-semibold text-white">Mon – Fri</p>
@@ -415,8 +428,7 @@ export function ScheduleWidget() {
 }
 
 export function StayConnectedWidget() {
-  const discord = useStreamStore((s) => s.discord)
-  const twitter = useStreamStore((s) => s.twitter)
+  const { discord, twitter } = useBranding().social
   return (
     <Widget title="Stay Connected">
       <div className="space-y-2 text-[11px] text-codes-text">
@@ -432,7 +444,7 @@ export function StayConnectedWidget() {
 }
 
 export function LoadingWidget() {
-  const progress = useStreamStore((s) => s.loadingProgress)
+  const progress = useLoadingProgress()
   return (
     <Widget title="Loading Status" className="border-dashed">
       <p className="mb-2 text-[12px] text-codes-muted">Loading...</p>
@@ -446,7 +458,7 @@ export function LoadingWidget() {
 /* ─── Footers ─── */
 
 export function MottoFooter() {
-  const motto = useStreamStore((s) => s.motto)
+  const motto = useBranding().motto
   return (
     <div className="flex h-full items-center gap-3 px-2">
       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-codes-accent/15 text-codes-accent">
@@ -463,7 +475,7 @@ export function MottoFooter() {
 }
 
 export function MottoFooterExtended() {
-  const motto = useStreamStore((s) => s.motto)
+  const motto = useBranding().motto
   return (
     <div className="flex h-full items-center gap-3 px-2">
       <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-codes-accent/15 text-codes-accent">
@@ -504,10 +516,9 @@ export function FooterCell({
 }
 
 export function MainCodingFooter() {
-  const items = useStreamStore((s) => s.todayPlan)
-  const problems = useStreamStore((s) => s.recentProblems)
-  const discord = useStreamStore((s) => s.discord)
-  const twitter = useStreamStore((s) => s.twitter)
+  const items = useTodayPlan()
+  const problems = useRecentProblems()
+  const { discord, twitter } = useBranding().social
 
   return (
     <footer className="grid h-[88px] shrink-0 grid-cols-4 gap-3 border-t border-codes-border px-4 py-2.5">
@@ -537,7 +548,7 @@ export function MainCodingFooter() {
 }
 
 export function StartingSoonFooter() {
-  const problems = useStreamStore((s) => s.recentProblems)
+  const problems = useRecentProblems()
   return (
     <footer className="grid h-[88px] shrink-0 grid-cols-4 gap-3 border-t border-codes-border px-4 py-2.5">
       <MottoFooterExtended />
@@ -553,9 +564,9 @@ export function StartingSoonFooter() {
 }
 
 export function BrbFooter() {
-  const upNext = useStreamStore((s) => s.upNextLabel)
-  const problems = useStreamStore((s) => s.recentProblems)
-  const schedule = useStreamStore((s) => s.schedule)
+  const upNext = useCodesCopy().upNextLabel
+  const problems = useRecentProblems()
+  const schedule = useBranding().schedule
 
   return (
     <footer className="grid h-[88px] shrink-0 grid-cols-4 gap-3 border-t border-codes-border px-4 py-2.5">
@@ -577,11 +588,9 @@ export function BrbFooter() {
 }
 
 export function WhiteboardFooter() {
-  const sub = useStreamStore((s) => s.latestSubscriber)
-  const fol = useStreamStore((s) => s.latestFollower)
-  const don = useStreamStore((s) => s.latestDonation)
-  const discord = useStreamStore((s) => s.discord)
-  const twitter = useStreamStore((s) => s.twitter)
+  const { latestSubscriber: sub, latestFollower: fol, latestDonation: don } =
+    useSession().streamEvents
+  const { discord, twitter } = useBranding().social
 
   return (
     <footer className="grid h-[88px] shrink-0 grid-cols-5 gap-3 border-t border-codes-border px-4 py-2.5">
@@ -608,7 +617,7 @@ export function WhiteboardFooter() {
 }
 
 export function SocialRow() {
-  const handle = useStreamStore((s) => s.handle)
+  const handle = useBranding().handle
   return (
     <div className="mt-5 flex items-center gap-4 text-codes-muted">
       <IconYouTube className="h-4 w-4" />
