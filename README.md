@@ -1,75 +1,73 @@
-# React + TypeScript + Vite
+# Woragis Stream — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Overlays OBS + painel `/control` (Vite + React + TanStack Router).
 
-Currently, two official plugins are available:
+## Estado atual
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Hoje:** estado em `localStorage` + `BroadcastChannel` (control ↔ cenas na mesma máquina).
+- **Backend:** helpers em `src/lib/api.ts` e `src/config/env.ts` — prontos para integrar REST/WebSocket.
 
-## React Compiler
+## Setup
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
-
-Note: This will impact Vite dev & build performances.
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+cp .env.example .env.local
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+App em `http://localhost:5173`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Variáveis de ambiente
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Variável | Default | Uso |
+|----------|---------|-----|
+| `VITE_API_URL` | `http://localhost:8080` | URL base do state-api |
+| `VITE_STATE_API_TOKEN` | *(vazio)* | Bearer no `/control` (PUT/PATCH/POST) |
+| `VITE_ROOM_ID` | `default` | Room da API |
+
+Exemplo local (com backend em `make run`):
+
+```env
+VITE_API_URL=http://localhost:8080
+VITE_STATE_API_TOKEN=dev-token
+VITE_ROOM_ID=default
 ```
+
+### Railway / produção
+
+Defina as mesmas vars **no build** do frontend (Vite embute `VITE_*` no bundle):
+
+```env
+VITE_API_URL=https://sua-api.railway.app
+VITE_STATE_API_TOKEN=seu-token-forte
+VITE_ROOM_ID=default
+```
+
+Inclua a URL do frontend em `CORS_ORIGINS` na API.
+
+## Como o frontend acha o backend
+
+```ts
+import { env } from '@/config/env'
+import { roomApiPath, subscribeWsUrl, apiFetch } from '@/lib/api'
+
+// GET público
+await fetch(roomApiPath('leetcode/state'))
+
+// PUT autenticado (control)
+await apiFetch('session', { method: 'PUT', body: JSON.stringify({ scene: 'live' }) })
+
+// WebSocket overlays
+new WebSocket(subscribeWsUrl('all'))
+```
+
+- REST: `{VITE_API_URL}/api/v1/rooms/{VITE_ROOM_ID}/…`
+- WS: `ws(s)://…/api/v1/rooms/{roomId}/subscribe?domain=all&token=…`
+
+## Scripts
+
+| Comando | Descrição |
+|---------|-----------|
+| `npm run dev` | Dev server |
+| `npm run build` | Build produção |
+| `npm run preview` | Preview do build |
