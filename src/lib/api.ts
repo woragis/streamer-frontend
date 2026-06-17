@@ -1,24 +1,25 @@
 import { env } from '@/config/env'
+import type { StreamRoomId } from '@/lib/room'
 
-export function roomApiBase() {
-  return `${env.apiUrl}/api/v1/rooms/${env.roomId}`
+export function roomApiBase(roomId: string = env.roomId) {
+  return `${env.apiUrl}/api/v1/rooms/${roomId}`
 }
 
 /** REST path under `/api/v1/rooms/{roomId}/…` */
-export function roomApiPath(segment = '') {
-  const base = roomApiBase()
+export function roomApiPath(segment = '', roomId: string = env.roomId) {
+  const base = roomApiBase(roomId)
   if (!segment) return base
   return `${base}/${segment.replace(/^\//, '')}`
 }
 
 /** WebSocket URL for overlay sync (`domain=all` by default). */
-export function subscribeWsUrl(domain = 'all') {
+export function subscribeWsUrl(domain = 'all', roomId: StreamRoomId | string = env.roomId) {
   const wsOrigin = env.apiUrl.replace(/^http/i, 'ws')
   const params = new URLSearchParams({ domain })
   if (env.apiToken) {
     params.set('token', env.apiToken)
   }
-  return `${wsOrigin}/api/v1/rooms/${env.roomId}/subscribe?${params.toString()}`
+  return `${wsOrigin}/api/v1/rooms/${roomId}/subscribe?${params.toString()}`
 }
 
 export class ApiError extends Error {
@@ -33,6 +34,7 @@ export class ApiError extends Error {
 export async function apiFetch<T = unknown>(
   segment: string,
   init: RequestInit = {},
+  roomId: string = env.roomId,
 ): Promise<T> {
   const headers = new Headers(init.headers)
   if (env.apiToken) {
@@ -42,7 +44,7 @@ export async function apiFetch<T = unknown>(
     headers.set('Content-Type', 'application/json')
   }
 
-  const res = await fetch(roomApiPath(segment), { ...init, headers })
+  const res = await fetch(roomApiPath(segment, roomId), { ...init, headers })
   if (!res.ok) {
     let message = res.statusText
     try {

@@ -13,16 +13,21 @@ import {
   WhiteboardPage,
 } from '@/routes/codes/pages'
 import { CalisthenicsMainPage } from '@/routes/calisthenics/pages'
+import { ApiSyncProvider } from '@/hooks/useApiSync'
 
 const rootRoute = createRootRoute({
-  component: () => <Outlet />,
+  component: () => (
+    <ApiSyncProvider>
+      <Outlet />
+    </ApiSyncProvider>
+  ),
 })
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    throw redirect({ to: '/control' })
+    throw redirect({ to: '/control', search: { room: 'codes' } })
   },
 })
 
@@ -30,6 +35,9 @@ const controlRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/control',
   component: ControlPage,
+  validateSearch: (search: Record<string, unknown>) => ({
+    room: search.room as 'codes' | 'calisthenics' | 'default' | undefined,
+  }),
 })
 
 const startingSoonRoute = createRoute({

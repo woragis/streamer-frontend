@@ -4,16 +4,15 @@ function trimTrailingSlash(url: string) {
 
 const apiUrl = trimTrailingSlash(import.meta.env.VITE_API_URL || 'http://localhost:8080')
 const apiToken = (import.meta.env.VITE_STATE_API_TOKEN || '').trim()
-const roomId = (import.meta.env.VITE_ROOM_ID || 'default').trim() || 'default'
+const roomId = (import.meta.env.VITE_ROOM_ID || 'codes').trim() || 'codes'
+const apiSyncRaw = (import.meta.env.VITE_API_SYNC || '').trim().toLowerCase()
 
 /** Runtime config from Vite env (baked in at build time). */
 export const env = {
-  /** Base URL of state-api, without trailing slash. */
   apiUrl,
-  /** Bearer token for mutating requests from /control. */
   apiToken,
-  /** Room synced with the backend (default: `default`). */
   roomId,
-  /** True when a token is set (control can PUT; overlays may still use GET/WS). */
   hasApiToken: apiToken.length > 0,
+  /** When true, frontend loads/pushes state via state-api and listens to WebSocket. */
+  apiSyncEnabled: apiSyncRaw === 'true' || apiSyncRaw === '1' || apiSyncRaw === 'yes',
 } as const

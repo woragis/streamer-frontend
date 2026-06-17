@@ -1,8 +1,10 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { dispatch, resetStoreToDefaults } from '@/stores/app-store'
 import { STORAGE_KEY } from '@/stores/persistence'
 import { useAppState, useTimerDisplay } from '@/hooks/useAppStore'
 import { useProgressToday, useWeekGoal } from '@/hooks/useOverlayData'
+import { useApiSync } from '@/hooks/useApiSync'
+import { STREAM_ROOMS } from '@/lib/room'
 import { ObsPreview } from '@/components/shared/ObsCanvas'
 import { StartingSoonPage, BrbPage, MainCodingPage, WhiteboardPage } from '@/routes/codes/pages'
 import { CalisthenicsMainPage } from '@/routes/calisthenics/pages'
@@ -52,6 +54,8 @@ export function ControlPage() {
   const state = useAppState()
   const progressToday = useProgressToday()
   const weekGoal = useWeekGoal()
+  const navigate = useNavigate({ from: '/control' })
+  const { roomId, apiSyncEnabled } = useApiSync('control')
 
   const resetAll = () => {
     localStorage.removeItem(STORAGE_KEY)
@@ -63,12 +67,31 @@ export function ControlPage() {
       <header className="border-b border-slate-800 px-8 py-6">
         <h1 className="text-2xl font-bold">Woragis Stream Control</h1>
         <p className="mt-1 text-sm text-slate-400">
-          TanStack Store + localStorage — sincroniza entre /control e todas as cenas OBS.
+          {apiSyncEnabled
+            ? `Sincronizado com a API (room: ${roomId}) — overlays OBS recebem updates via WebSocket.`
+            : 'Modo local (localStorage) — defina VITE_API_SYNC=true para sincronizar com a API.'}
         </p>
       </header>
 
       <div className="grid grid-cols-1 gap-8 p-8 xl:grid-cols-2">
         <section className="space-y-6">
+          <Panel title="Room">
+            <div className="flex flex-wrap gap-2">
+              {STREAM_ROOMS.map((r) => (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => navigate({ search: { room: r.id } })}
+                  className={`rounded-lg px-3 py-1.5 text-xs font-semibold ${
+                    roomId === r.id ? 'bg-codes-accent text-white' : 'bg-slate-800 text-slate-300'
+                  }`}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </Panel>
+
           <Panel title="Cena ativa">
             <div className="flex flex-wrap gap-2">
               {scenes.map((s) => (
@@ -119,12 +142,27 @@ export function ControlPage() {
                 }
               />
             </Field>
-            <Field label="Handle">
+            <Field label="Codes Handle">
               <input
                 className={inputClass}
-                value={state.branding.handle}
+                value={state.branding.codesHandle}
                 onChange={(e) =>
-                  dispatch((s) => ({ ...s, branding: { ...s.branding, handle: e.target.value } }))
+                  dispatch((s) => ({
+                    ...s,
+                    branding: { ...s.branding, codesHandle: e.target.value },
+                  }))
+                }
+              />
+            </Field>
+            <Field label="Calisthenics Handle">
+              <input
+                className={inputClass}
+                value={state.branding.calisthenicsHandle}
+                onChange={(e) =>
+                  dispatch((s) => ({
+                    ...s,
+                    branding: { ...s.branding, calisthenicsHandle: e.target.value },
+                  }))
                 }
               />
             </Field>
