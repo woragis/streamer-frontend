@@ -1,5 +1,6 @@
-import type { AppState, LegacyStreamState, Problem, PlanItem, Exercise, Scene } from './types'
+import type { AppState, LegacyStreamState, Problem, PlanItem, Exercise, Scene, BrandingState } from './types'
 import { STORAGE_VERSION } from './types'
+import { normalizeBranding } from '@/lib/branding'
 import {
   createDefaultAppState,
   createDefaultExercises,
@@ -8,12 +9,32 @@ import {
 } from './defaults'
 
 function isAppState(value: unknown): value is AppState {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    'version' in value &&
-    (value as AppState).version === STORAGE_VERSION
-  )
+  if (typeof value !== 'object' || value === null || !('version' in value)) {
+    return false
+  }
+  const v = (value as AppState).version
+  return v === STORAGE_VERSION || v === 2
+}
+
+function upgradeBranding(raw: Partial<BrandingState>): BrandingState {
+  return normalizeBranding(raw)
+}
+
+function upgradeToV3(state: AppState): AppState {
+  if (state.version === STORAGE_VERSION) {
+    return { ...state, branding: upgradeBranding(state.branding) }
+  }
+  const legacyHandle = state.branding.handle ?? state.branding.codesHandle ?? '@WoragisCodes'
+  return {
+    ...state,
+    version: STORAGE_VERSION,
+    branding: normalizeBranding({
+      ...state.branding,
+      handle: legacyHandle,
+      codesHandle: state.branding.codesHandle ?? legacyHandle,
+      calisthenicsHandle: state.branding.calisthenicsHandle ?? '@WoragisCalisthenics',
+    }),
+  }
 }
 
 function legacyToProblems(legacy: LegacyStreamState): Problem[] {
@@ -92,7 +113,7 @@ export function migrateLegacyState(legacy: LegacyStreamState): AppState {
 
   return {
     version: STORAGE_VERSION,
-    branding: {
+    branding: upgradeBranding({
       handle: legacy.handle ?? defaults.branding.handle,
       brandTitle: legacy.brandTitle ?? defaults.branding.brandTitle,
       motto: legacy.motto ?? defaults.branding.motto,
@@ -104,7 +125,7 @@ export function migrateLegacyState(legacy: LegacyStreamState): AppState {
         youtube: legacy.youtube ?? defaults.branding.social.youtube,
         kick: legacy.kick ?? defaults.branding.social.kick,
       },
-    },
+    }),
     session: {
       scene: (legacy.streamStatus as Scene) ?? defaults.session.scene,
       startedAt: null,
@@ -185,7 +206,7 @@ export function migrateLegacyState(legacy: LegacyStreamState): AppState {
 }
 
 export function hydrateAppState(raw: unknown): AppState {
-  if (isAppState(raw)) return raw
+  if (isAppState(raw)) return upgradeToV3(raw as AppState)
   if (typeof raw === 'object' && raw !== null) {
     return migrateLegacyState(raw as LegacyStreamState)
   }
@@ -198,7 +219,7 @@ export function mergeWithDefaults(partial: Partial<AppState>): AppState {
     ...defaults,
     ...partial,
     version: STORAGE_VERSION,
-    branding: { ...defaults.branding, ...partial.branding, social: { ...defaults.branding.social, ...partial.branding?.social } },
+    branding: upgradeBranding({ ...defaults.branding, ...partial.branding, social: { ...defaults.branding.social, ...partial.branding?.social } }),
     session: { ...defaults.session, ...partial.session, streamEvents: { ...defaults.session.streamEvents, ...partial.session?.streamEvents } },
     timers: partial.timers?.timers
       ? { timers: { ...defaults.timers.timers, ...partial.timers.timers } }

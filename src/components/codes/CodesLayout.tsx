@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/constants/canvas'
 import {
   useBranding,
   useCodesCopy,
@@ -14,6 +15,7 @@ import {
 } from '@/hooks/useOverlayData'
 import { formatCountdown } from '@/hooks/useTimers'
 import type { Difficulty } from '@/stores/types'
+import { brandingHandle } from '@/lib/branding'
 import {
   IconYouTube,
   IconKick,
@@ -39,7 +41,10 @@ export function CodesShell({
   footer: ReactNode
 }) {
   return (
-    <div className="flex h-[1080px] w-[1920px] flex-col bg-codes-bg">
+    <div
+      className="flex flex-col bg-codes-bg"
+      style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+    >
       <CodesHeader />
       <div className="min-h-0 flex-1">{children}</div>
       {footer}
@@ -54,7 +59,9 @@ export function CodesHeader({
   status?: string
   statusDot?: 'live' | 'soon'
 }) {
-  const { brandTitle, handle } = useBranding()
+  const branding = useBranding()
+  const { brandTitle } = branding
+  const handle = brandingHandle(branding, 'codes')
 
   return (
     <header className="flex h-[48px] shrink-0 items-center justify-between border-b border-codes-border bg-codes-bg px-6">
@@ -617,7 +624,7 @@ export function WhiteboardFooter() {
 }
 
 export function SocialRow() {
-  const handle = useBranding().handle
+  const handle = brandingHandle(useBranding(), 'codes')
   return (
     <div className="mt-5 flex items-center gap-4 text-codes-muted">
       <IconYouTube className="h-4 w-4" />

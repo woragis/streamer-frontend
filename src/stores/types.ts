@@ -1,4 +1,4 @@
-export const STORAGE_VERSION = 2
+export const STORAGE_VERSION = 3
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
@@ -13,7 +13,10 @@ export type ProblemStatus = 'queued' | 'active' | 'solved' | 'skipped'
 export type ExerciseStatus = 'pending' | 'active' | 'done'
 
 export interface BrandingState {
-  handle: string
+  /** @deprecated use codesHandle — kept for migration */
+  handle?: string
+  codesHandle: string
+  calisthenicsHandle: string
   brandTitle: string
   motto: string
   calisthenicsMotto: string

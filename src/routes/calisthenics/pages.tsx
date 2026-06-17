@@ -1,6 +1,8 @@
 import { ObsCanvas } from '@/components/shared/ObsCanvas'
+import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/constants/canvas'
 import { useObsMode } from '@/hooks/useObsMode'
 import { useBranding, useWorkoutStats } from '@/hooks/useOverlayData'
+import { brandingHandle } from '@/lib/branding'
 import type { Exercise } from '@/stores/types'
 import { IconYouTube, IconKick, IconInstagram } from '@/components/codes/Icons'
 
@@ -40,11 +42,16 @@ function CalisthenicsFrame({
   streamFormatted: string
   todayGoal: { label: string; progress: number }
 }) {
-  const { handle, calisthenicsMotto: motto } = useBranding()
+  const branding = useBranding()
+  const { calisthenicsMotto: motto } = branding
+  const handle = brandingHandle(branding, 'calisthenics')
   const ch = handle.replace('@', '').toUpperCase() || 'YOURCHANNEL'
 
   return (
-    <div className="cal-noise flex h-[1080px] w-[1920px] flex-col bg-cal-bg">
+    <div
+      className="cal-noise flex flex-col bg-cal-bg"
+      style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+    >
       <header className="relative z-10 flex h-[56px] shrink-0 items-center justify-between border-b border-cal-border bg-cal-panel/90 px-8">
         <div className="font-display text-[32px] leading-none tracking-wider text-white">W</div>
         <div className="flex items-center gap-10">

@@ -180,7 +180,9 @@ export function createDefaultAppState(): AppState {
   return {
     version: STORAGE_VERSION,
     branding: {
-      handle: '@yourhandle',
+      codesHandle: '@WoragisCodes',
+      calisthenicsHandle: '@WoragisCalisthenics',
+      handle: '@WoragisCodes',
       brandTitle: 'LEETCODE LIVE',
       motto: 'FOCUS • DISCIPLINE • CONSISTENCY',
       calisthenicsMotto: 'DISCIPLINE TODAY FREEDOM TOMORROW',
