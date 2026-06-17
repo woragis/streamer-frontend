@@ -54,6 +54,32 @@ body {
   pointer-events: none;
 }
 
+/* OBS browser source: fill viewport, no scrollbars */
+html.obs-viewport,
+html.obs-viewport body,
+html.obs-viewport #root {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.obs-fit-screen {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+.obs-scale-root {
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
 .overlay-scroll::-webkit-scrollbar {
   width: 4px;
 }
