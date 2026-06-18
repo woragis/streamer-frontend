@@ -117,4 +117,5 @@ export const SCENE_TIMER_MAP: Partial<Record<string, TimerId>> = {
   brb: 'brb',
   workout: 'rest',
   whiteboard: 'focus',
+  'problem-analysis': 'focus',
 }

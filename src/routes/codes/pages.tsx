@@ -5,6 +5,12 @@ import {
   useCodesCopy,
   useProgressToday,
   useStartingSoonTimer,
+  useCurrentProblem,
+  useWhiteboard,
+  useBranding,
+  useStreamTimerDisplay,
+  useWeekGoal,
+  useCodesGoals,
 } from '@/hooks/useOverlayData'
 import {
   CodesShell,
@@ -27,6 +33,10 @@ import {
   BrbFooter,
   WhiteboardFooter,
   ProgressTrack,
+  DifficultyTag,
+  Widget,
+  FooterCell,
+  MottoFooter,
 } from '@/components/codes/CodesLayout'
 import { IconCode } from '@/components/codes/Icons'
 import {
@@ -81,6 +91,10 @@ export function StartingSoonPage() {
 }
 
 export function BrbPage() {
+  return <BreakPage />
+}
+
+export function BreakPage() {
   const obs = useObsMode()
   const brb = useBrbTimer()
   const copy = useCodesCopy()
@@ -111,7 +125,7 @@ export function BrbPage() {
               <IconCode className="h-6 w-6" />
             </span>
             <h1 className="mb-2 text-[64px] leading-none font-black text-white uppercase">
-              Be Right <span className="text-codes-accent">Back</span>
+              Break <span className="text-codes-accent">Time</span>
             </h1>
             <p className="mb-8 text-[11px] tracking-[0.16em] text-codes-muted uppercase">
               {copy.brbSubtext}
@@ -189,5 +203,151 @@ export function WhiteboardPage() {
         </div>
       </CodesShell>
     </ObsCanvas>
+  )
+}
+
+export function ProblemAnalysisPage() {
+  const obs = useObsMode()
+  const problem = useCurrentProblem()
+  const wb = useWhiteboard()
+
+  return (
+    <ObsCanvas obs={obs}>
+      <CodesShell footer={<WhiteboardFooter />}>
+        <div className="grid h-full grid-cols-[300px_1fr_320px] gap-3 px-3 py-3">
+          <div className="flex flex-col gap-2.5 overflow-y-auto">
+            <CurrentProblemWidget />
+            {problem && (
+              <Widget title="Problem" accent>
+                <p className="mb-2 text-[13px] leading-snug font-semibold text-white">
+                  {problem.id}. {problem.title}
+                </p>
+                <DifficultyTag difficulty={problem.difficulty} />
+                <p className="mt-3 line-clamp-6 text-[12px] leading-relaxed text-codes-text">
+                  {problem.description}
+                </p>
+              </Widget>
+            )}
+            <ProgressTodayWidget />
+            <StreamTimeWidget />
+          </div>
+
+          <div className="codes-glow-border flex flex-col overflow-hidden rounded-xl bg-codes-panel">
+            <div className="border-b border-codes-border px-5 py-3">
+              <p className="text-[10px] font-bold tracking-[0.16em] text-codes-accent uppercase">
+                Post-Solve Analysis
+              </p>
+              <h2 className="mt-1 text-[22px] font-bold text-white">{wb.title || 'Solution Walkthrough'}</h2>
+            </div>
+            <div className="overlay-scroll flex-1 space-y-5 overflow-y-auto p-6">
+              <section>
+                <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                  Approach
+                </p>
+                <p className="text-[15px] font-semibold text-codes-accent">{wb.approach}</p>
+              </section>
+              <section>
+                <p className="mb-3 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                  Key Steps
+                </p>
+                <ul className="space-y-2.5">
+                  {wb.bullets.map((b, i) => (
+                    <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-codes-text">
+                      <span className="font-mono text-codes-accent">{i + 1}.</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+              <section className="grid grid-cols-3 gap-3">
+                <ComplexityCard label="Time" value="O(n)" />
+                <ComplexityCard label="Space" value="O(h)" />
+                <ComplexityCard label="Pattern" value="DFS" />
+              </section>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2.5 overflow-hidden">
+            <LiveCam className="h-[140px] shrink-0" />
+            <NotesWidgetPanel />
+            <ApproachWidget />
+            <TimerWidget />
+          </div>
+        </div>
+      </CodesShell>
+    </ObsCanvas>
+  )
+}
+
+function ComplexityCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="codes-widget p-3 text-center">
+      <p className="mb-1 text-[9px] font-bold tracking-[0.12em] text-codes-muted uppercase">{label}</p>
+      <p className="font-mono text-[18px] font-bold text-white">{value}</p>
+    </div>
+  )
+}
+
+export function EndScreenPage() {
+  const obs = useObsMode()
+  const progressToday = useProgressToday()
+  const weekGoal = useWeekGoal()
+  const goals = useCodesGoals()
+  const stream = useStreamTimerDisplay()
+  const branding = useBranding()
+
+  return (
+    <ObsCanvas obs={obs}>
+      <CodesShell status="ENDED" statusDot="soon" footer={<EndScreenFooter />}>
+        <div className="relative flex h-full flex-col items-center justify-center px-12 text-center">
+          <CodeWatermark className="absolute top-8 left-8 opacity-30" />
+          <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
+            Stream Ended
+          </p>
+          <h1 className="mb-4 text-[56px] leading-none font-black tracking-tight text-white uppercase">
+            Thanks for <span className="text-codes-accent">Watching</span>
+          </h1>
+          <p className="mb-10 max-w-[640px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
+            See you next stream · {branding.schedule}
+          </p>
+
+          <div className="mb-10 grid w-full max-w-[900px] grid-cols-4 gap-4">
+            <EndStat label="Today" value={`${progressToday.current}/${progressToday.target}`} sub="problems" />
+            <EndStat label="Week" value={`${weekGoal.current}/${weekGoal.target}`} sub="problems" />
+            <EndStat label="Streak" value={String(goals.streak)} sub="days" />
+            <EndStat label="Stream" value={stream.formatted} sub="duration" />
+          </div>
+
+          <SocialRow />
+        </div>
+      </CodesShell>
+    </ObsCanvas>
+  )
+}
+
+function EndStat({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="codes-widget-accent rounded-xl px-6 py-5">
+      <p className="mb-1 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">{label}</p>
+      <p className="font-mono text-[36px] font-bold text-white">{value}</p>
+      <p className="text-[10px] tracking-[0.12em] text-codes-muted uppercase">{sub}</p>
+    </div>
+  )
+}
+
+function EndScreenFooter() {
+  const { discord, twitter, youtube, kick } = useBranding().social
+  return (
+    <footer className="grid h-[88px] shrink-0 grid-cols-3 gap-3 border-t border-codes-border px-4 py-2.5">
+      <MottoFooter />
+      <FooterCell title="Follow">
+        <p className="text-[11px] text-codes-text">YouTube · {youtube}</p>
+        <p className="text-[11px] text-codes-text">Kick · {kick}</p>
+      </FooterCell>
+      <FooterCell title="Community">
+        <p className="text-[11px] text-codes-text">Discord · {discord}</p>
+        <p className="text-[11px] text-codes-text">Twitter · {twitter}</p>
+      </FooterCell>
+    </footer>
   )
 }

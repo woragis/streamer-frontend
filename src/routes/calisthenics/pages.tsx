@@ -1,10 +1,10 @@
 import { ObsCanvas } from '@/components/shared/ObsCanvas'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/constants/canvas'
 import { useObsMode } from '@/hooks/useObsMode'
-import { useBranding, useWorkoutStats } from '@/hooks/useOverlayData'
+import { useBranding, useWorkoutStats, useSession, useTotalReps } from '@/hooks/useOverlayData'
 import { brandingHandle } from '@/lib/branding'
 import type { Exercise } from '@/stores/types'
-import { IconYouTube, IconKick, IconInstagram } from '@/components/codes/Icons'
+import { IconYouTube, IconKick, IconInstagram, IconHeart, IconUser, IconDollar } from '@/components/codes/Icons'
 
 export function CalisthenicsMainPage() {
   const obs = useObsMode()
@@ -154,6 +154,138 @@ function CalisthenicsFrame({
           </p>
         </div>
       </footer>
+    </div>
+  )
+}
+
+export function CalisthenicsReactPage() {
+  const obs = useObsMode()
+  const { streamEvents } = useSession()
+  const stats = useWorkoutStats()
+
+  return (
+    <ObsCanvas theme="calisthenics" obs={obs}>
+      <div
+        className="relative flex flex-col bg-transparent"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70" />
+
+        <div className="relative z-10 flex flex-1 flex-col items-center justify-center gap-8 px-16">
+          <p className="text-[11px] font-bold tracking-[0.25em] text-cal-accent uppercase">
+            Community React
+          </p>
+
+          <ReactAlertCard
+            type="follower"
+            icon={<IconHeart className="h-10 w-10 text-pink-400" />}
+            label="New Follower"
+            value={streamEvents.latestFollower || '—'}
+          />
+
+          <div className="grid w-full max-w-[1100px] grid-cols-2 gap-6">
+            <ReactAlertCard
+              type="subscriber"
+              icon={<IconUser className="h-8 w-8 text-cal-accent" />}
+              label="Latest Subscriber"
+              value={streamEvents.latestSubscriber || '—'}
+              compact
+            />
+            <ReactAlertCard
+              type="donation"
+              icon={<IconDollar className="h-8 w-8 text-emerald-400" />}
+              label="Latest Donation"
+              value={streamEvents.latestDonation || '—'}
+              compact
+            />
+          </div>
+        </div>
+
+        <footer className="relative z-10 flex h-[72px] items-center justify-between border-t border-cal-border/50 bg-black/50 px-10 backdrop-blur-sm">
+          <span className="font-display text-[14px] tracking-wider text-white uppercase">
+            {stats.workoutType}
+          </span>
+          <span className="font-mono text-[13px] text-cal-text">{stats.stream.formatted}</span>
+        </footer>
+      </div>
+    </ObsCanvas>
+  )
+}
+
+function ReactAlertCard({
+  icon,
+  label,
+  value,
+  compact = false,
+}: {
+  icon: React.ReactNode
+  label: string
+  value: string
+  compact?: boolean
+  type?: string
+}) {
+  return (
+    <div
+      className={`rounded-2xl border border-cal-accent/40 bg-black/75 text-center shadow-[0_0_40px_var(--color-cal-accent-glow)] backdrop-blur-md ${
+        compact ? 'px-8 py-6' : 'px-14 py-10'
+      }`}
+    >
+      <div className="mb-3 flex justify-center">{icon}</div>
+      <p className="mb-2 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">{label}</p>
+      <p className={`font-display tracking-wide text-white uppercase ${compact ? 'text-[28px]' : 'text-[48px]'}`}>
+        {value}
+      </p>
+    </div>
+  )
+}
+
+export function CalisthenicsEndScreenPage() {
+  const obs = useObsMode()
+  const stats = useWorkoutStats()
+  const totalReps = useTotalReps()
+  const branding = useBranding()
+  const handle = brandingHandle(branding, 'calisthenics')
+
+  return (
+    <ObsCanvas theme="calisthenics" obs={obs}>
+      <div
+        className="cal-noise flex flex-col bg-cal-bg"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+      >
+        <header className="flex h-[56px] shrink-0 items-center justify-center border-b border-cal-border bg-cal-panel/90">
+          <span className="font-display text-[16px] tracking-[0.2em] text-cal-muted uppercase">
+            Workout Complete
+          </span>
+        </header>
+
+        <div className="flex flex-1 flex-col items-center justify-center px-16 text-center">
+          <h1 className="mb-4 font-display text-[64px] leading-none tracking-wide text-white uppercase">
+            Great <span className="text-cal-accent">Session</span>
+          </h1>
+          <p className="mb-12 max-w-[600px] text-[12px] tracking-[0.16em] text-cal-muted uppercase">
+            Thanks for training with me · {branding.schedule}
+          </p>
+
+          <div className="mb-12 grid w-full max-w-[800px] grid-cols-3 gap-5">
+            <CalEndStat label="Workout" value={stats.workoutType} />
+            <CalEndStat label="Total Reps" value={String(totalReps)} />
+            <CalEndStat label="Duration" value={stats.stream.formatted} />
+          </div>
+
+          <p className="font-script text-[28px] text-white">
+            Follow <span className="text-cal-accent">{handle}</span> for the next live
+          </p>
+        </div>
+      </div>
+    </ObsCanvas>
+  )
+}
+
+function CalEndStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-cal-border bg-cal-panel/80 px-6 py-5">
+      <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">{label}</p>
+      <p className="font-display text-[32px] tracking-wide text-white uppercase">{value}</p>
     </div>
   )
 }

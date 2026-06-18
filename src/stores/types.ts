@@ -2,7 +2,16 @@ export const STORAGE_VERSION = 3
 
 export type Difficulty = 'easy' | 'medium' | 'hard'
 
-export type Scene = 'offline' | 'starting-soon' | 'live' | 'brb' | 'whiteboard' | 'workout'
+export type Scene =
+  | 'offline'
+  | 'starting-soon'
+  | 'live'
+  | 'brb'
+  | 'whiteboard'
+  | 'problem-analysis'
+  | 'end-screen'
+  | 'workout'
+  | 'react'
 
 export type TimerId = 'stream' | 'startingSoon' | 'brb' | 'rest' | 'focus'
 

@@ -9,11 +9,22 @@ import { ControlPage } from '@/routes/control/ControlPage'
 import {
   StartingSoonPage,
   BrbPage,
+  BreakPage,
   MainCodingPage,
   WhiteboardPage,
+  ProblemAnalysisPage,
+  EndScreenPage,
 } from '@/routes/codes/pages'
-import { CalisthenicsMainPage } from '@/routes/calisthenics/pages'
+import {
+  CalisthenicsMainPage,
+  CalisthenicsReactPage,
+  CalisthenicsEndScreenPage,
+} from '@/routes/calisthenics/pages'
 import { ApiSyncProvider } from '@/hooks/useApiSync'
+
+const obsSearch = (search: Record<string, unknown>) => ({
+  obs: search.obs as string | boolean | undefined,
+})
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -44,45 +55,70 @@ const startingSoonRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/codes/starting-soon',
   component: StartingSoonPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    obs: search.obs as string | boolean | undefined,
-  }),
+  validateSearch: obsSearch,
 })
 
 const mainCodingRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/codes/main',
   component: MainCodingPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    obs: search.obs as string | boolean | undefined,
-  }),
+  validateSearch: obsSearch,
 })
 
 const brbRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/codes/brb',
   component: BrbPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    obs: search.obs as string | boolean | undefined,
-  }),
+  validateSearch: obsSearch,
+})
+
+const breakRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/break',
+  component: BreakPage,
+  validateSearch: obsSearch,
 })
 
 const whiteboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/codes/whiteboard',
   component: WhiteboardPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    obs: search.obs as string | boolean | undefined,
-  }),
+  validateSearch: obsSearch,
+})
+
+const problemAnalysisRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/problem-analysis',
+  component: ProblemAnalysisPage,
+  validateSearch: obsSearch,
+})
+
+const codesEndScreenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/end-screen',
+  component: EndScreenPage,
+  validateSearch: obsSearch,
 })
 
 const calisthenicsMainRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/calisthenics/main',
   component: CalisthenicsMainPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    obs: search.obs as string | boolean | undefined,
-  }),
+  validateSearch: obsSearch,
+})
+
+const calisthenicsReactRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/react',
+  component: CalisthenicsReactPage,
+  validateSearch: obsSearch,
+})
+
+const calisthenicsEndScreenRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/end-screen',
+  component: CalisthenicsEndScreenPage,
+  validateSearch: obsSearch,
 })
 
 const routeTree = rootRoute.addChildren([
@@ -91,8 +127,13 @@ const routeTree = rootRoute.addChildren([
   startingSoonRoute,
   mainCodingRoute,
   brbRoute,
+  breakRoute,
   whiteboardRoute,
+  problemAnalysisRoute,
+  codesEndScreenRoute,
   calisthenicsMainRoute,
+  calisthenicsReactRoute,
+  calisthenicsEndScreenRoute,
 ])
 
 export const router = createRouter({ routeTree })

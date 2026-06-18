@@ -5,10 +5,9 @@ import { useAppState, useTimerDisplay } from '@/hooks/useAppStore'
 import { useProgressToday, useWeekGoal } from '@/hooks/useOverlayData'
 import { useApiSync } from '@/hooks/useApiSync'
 import { STREAM_ROOMS } from '@/lib/room'
-import { ObsPreview } from '@/components/shared/ObsCanvas'
-import { StartingSoonPage, BrbPage, MainCodingPage, WhiteboardPage } from '@/routes/codes/pages'
-import { CalisthenicsMainPage } from '@/routes/calisthenics/pages'
-import type { Difficulty, Scene, TimerId } from '@/stores/types'
+import { SCENE_CATALOG, CONTROL_SCENES } from '@/lib/scenes'
+import { ScenePreviewCatalog } from '@/components/control/ScenePreviewCatalog'
+import type { Difficulty, TimerId } from '@/stores/types'
 import { TIMER_IDS } from '@/stores/timers'
 import {
   addExercise,
@@ -33,23 +32,11 @@ import {
 import { selectSortedPlan } from '@/stores/selectors'
 import { PlatformSettingsPanel } from '@/routes/control/PlatformSettingsPanel'
 
-const codesRoutes = [
-  { path: '/codes/starting-soon', label: 'Starting Soon' },
-  { path: '/codes/main', label: 'Main Coding' },
-  { path: '/codes/brb', label: 'BRB' },
-  { path: '/codes/whiteboard', label: 'Whiteboard' },
-]
-
-const calRoutes = [{ path: '/calisthenics/main', label: 'Main Workout' }]
-
-const scenes: { id: Scene; label: string }[] = [
-  { id: 'offline', label: 'Offline' },
-  { id: 'starting-soon', label: 'Starting Soon' },
-  { id: 'live', label: 'Live' },
-  { id: 'brb', label: 'BRB' },
-  { id: 'whiteboard', label: 'Whiteboard' },
-  { id: 'workout', label: 'Workout' },
-]
+const roomCatalogFilter = (roomId: string): 'codes' | 'calisthenics' | 'all' => {
+  if (roomId === 'codes') return 'codes'
+  if (roomId === 'calisthenics') return 'calisthenics'
+  return 'all'
+}
 
 export function ControlPage() {
   const state = useAppState()
@@ -74,6 +61,18 @@ export function ControlPage() {
         </p>
       </header>
 
+      <section className="border-b border-slate-800 px-8 py-6">
+        <h2 className="mb-1 text-lg font-semibold text-slate-200">Catálogo de telas</h2>
+        <p className="mb-5 text-sm text-slate-500">
+          Previews 16:9 — clique para expandir. Use Set scene ou OBS URL em cada card.
+        </p>
+        <ScenePreviewCatalog
+          entries={SCENE_CATALOG}
+          activeScene={state.session.scene}
+          roomFilter={roomCatalogFilter(roomId)}
+        />
+      </section>
+
       <div className="grid grid-cols-1 gap-8 p-8 xl:grid-cols-2">
         <section className="space-y-6">
           <Panel title="Room">
@@ -97,7 +96,7 @@ export function ControlPage() {
 
           <Panel title="Cena ativa">
             <div className="flex flex-wrap gap-2">
-              {scenes.map((s) => (
+              {CONTROL_SCENES.map((s) => (
                 <button
                   key={s.id}
                   type="button"
@@ -129,7 +128,9 @@ export function ControlPage() {
 
           <Panel title="Rotas OBS">
             <ul className="space-y-2">
-              {[...codesRoutes, ...calRoutes].map((r) => (
+              {SCENE_CATALOG.filter((r) =>
+                roomFilterCards(roomId) === 'all' ? true : r.group === roomFilterCards(roomId),
+              ).map((r) => (
                 <RouteLink key={r.path} path={r.path} label={r.label} />
               ))}
             </ul>
@@ -447,26 +448,22 @@ export function ControlPage() {
         </section>
 
         <section className="space-y-6">
-          <h2 className="text-lg font-semibold text-slate-300">Previews</h2>
-          <ObsPreview label="Starting Soon">
-            <StartingSoonPage />
-          </ObsPreview>
-          <ObsPreview label="Main Coding">
-            <MainCodingPage />
-          </ObsPreview>
-          <ObsPreview label="BRB">
-            <BrbPage />
-          </ObsPreview>
-          <ObsPreview label="Whiteboard">
-            <WhiteboardPage />
-          </ObsPreview>
-          <ObsPreview label="Calisthenics">
-            <CalisthenicsMainPage />
-          </ObsPreview>
+          <Panel title="Atalhos">
+            <p className="text-sm text-slate-400">
+              Selecione uma cena no catálogo acima ou use os botões de cena ativa. Chat commands
+              existentes: <code className="text-codes-accent">!brb</code>,{' '}
+              <code className="text-codes-accent">!live</code>,{' '}
+              <code className="text-codes-accent">!whiteboard</code>.
+            </p>
+          </Panel>
         </section>
       </div>
     </div>
   )
+}
+
+function roomFilterCards(roomId: string): 'codes' | 'calisthenics' | 'all' {
+  return roomCatalogFilter(roomId)
 }
 
 function TimerControl({ id }: { id: TimerId }) {

@@ -36,16 +36,20 @@ import {
 export function CodesShell({
   children,
   footer,
+  status,
+  statusDot,
 }: {
   children: ReactNode
   footer: ReactNode
+  status?: string
+  statusDot?: 'live' | 'soon'
 }) {
   return (
     <div
       className="flex flex-col bg-codes-bg"
       style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
     >
-      <CodesHeader />
+      <CodesHeader status={status} statusDot={statusDot} />
       <div className="min-h-0 flex-1">{children}</div>
       {footer}
     </div>
