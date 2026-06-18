@@ -197,6 +197,50 @@ html.obs-viewport #root {
   pointer-events: none;
 }
 
+/* OBS transparent holes */
+.obs-hole {
+  position: relative;
+  box-sizing: border-box;
+}
+
+.obs-hole-transparent {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.obs-hole-preview {
+  background: repeating-linear-gradient(
+    -45deg,
+    #0a0e14,
+    #0a0e14 8px,
+    #111820 8px,
+    #111820 16px
+  );
+  border: 2px dashed #2563eb88;
+  box-shadow: inset 0 0 24px #00000060;
+}
+
+.obs-hole-label {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  border-radius: 4px;
+  background: rgb(0 0 0 / 0.75);
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  pointer-events: none;
+}
+
+.mask-fade-top {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%);
+}
+
 @keyframes pulse-live {
   0%,
   100% {

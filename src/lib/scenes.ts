@@ -7,6 +7,7 @@ import {
   ProblemAnalysisPage,
   EndScreenPage,
 } from '@/routes/codes/pages'
+import { CodesChatPage } from '@/routes/codes/chat'
 import {
   CalisthenicsMainPage,
   CalisthenicsBrbPage,
@@ -73,6 +74,14 @@ export const SCENE_CATALOG: SceneCatalogEntry[] = [
     scene: 'end-screen',
     group: 'codes',
     Page: EndScreenPage,
+  },
+  {
+    id: 'codes-chat',
+    label: 'Live Chat',
+    path: '/codes/chat',
+    scene: 'live',
+    group: 'codes',
+    Page: CodesChatPage,
   },
   {
     id: 'cal-main',

@@ -6,6 +6,7 @@ import {
   redirect,
 } from '@tanstack/react-router'
 import { ControlPage } from '@/routes/control/ControlPage'
+import { CodesChatPage } from '@/routes/codes/chat'
 import {
   StartingSoonPage,
   BrbPage,
@@ -102,6 +103,13 @@ const codesEndScreenRoute = createRoute({
   validateSearch: obsSearch,
 })
 
+const codesChatRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/chat',
+  component: CodesChatPage,
+  validateSearch: obsSearch,
+})
+
 const calisthenicsMainRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/calisthenics/main',
@@ -147,6 +155,7 @@ const routeTree = rootRoute.addChildren([
   whiteboardRoute,
   problemAnalysisRoute,
   codesEndScreenRoute,
+  codesChatRoute,
   calisthenicsMainRoute,
   calisthenicsBreakRoute,
   calisthenicsBrbRoute,

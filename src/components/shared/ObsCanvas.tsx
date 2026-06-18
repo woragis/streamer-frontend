@@ -6,6 +6,8 @@ interface ObsCanvasProps {
   children: ReactNode
   theme?: 'codes' | 'calisthenics'
   obs?: boolean
+  /** Fully transparent canvas (chat overlay route). */
+  transparent?: boolean
   className?: string
 }
 
@@ -13,9 +15,14 @@ export function ObsCanvas({
   children,
   theme = 'codes',
   obs = false,
+  transparent = false,
   className = '',
 }: ObsCanvasProps) {
-  const bg = theme === 'codes' ? 'bg-codes-bg' : 'bg-cal-bg'
+  const bg = transparent
+    ? 'bg-transparent'
+    : theme === 'codes'
+      ? 'bg-codes-bg'
+      : 'bg-cal-bg'
   const { scale } = useObsScale(obs)
 
   const canvas = (

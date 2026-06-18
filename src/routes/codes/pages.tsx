@@ -13,9 +13,23 @@ import {
   useCodesGoals,
 } from '@/hooks/useOverlayData'
 import {
+  CODES_SIDEBAR_LEFT_ANALYSIS_W,
+  CODES_SIDEBAR_LEFT_BRB_W,
+  CODES_SIDEBAR_LEFT_MAIN_W,
+  CODES_SIDEBAR_LEFT_WB_W,
+  CODES_SIDEBAR_RIGHT_W,
+} from '@/constants/codes-layout'
+import {
+  CodesContentShell,
+  CodesLayoutGrid,
+  CodesLayeredContent,
+  CodesLeftSidebar,
+  CodesRightSidebar,
+  CodesScreenHole,
+} from '@/components/codes/CodesLayoutShell'
+import {
   CodesShell,
   CountdownBox,
-  CodeWatermark,
   BraceDecoration,
   SocialRow,
   CurrentProblemWidget,
@@ -27,7 +41,6 @@ import {
   LatestProblemWidget,
   ScheduleWidget,
   StayConnectedWidget,
-  LiveCam,
   MainCodingFooter,
   StartingSoonFooter,
   BrbFooter,
@@ -48,6 +61,8 @@ import {
   TimerWidget,
 } from '@/components/codes/Mocks'
 
+const rightW = `${CODES_SIDEBAR_RIGHT_W}px`
+
 export function StartingSoonPage() {
   const obs = useObsMode()
   const startingSoon = useStartingSoonTimer()
@@ -56,35 +71,39 @@ export function StartingSoonPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<StartingSoonFooter />}>
-        <div className="relative grid h-full grid-cols-[280px_1fr_340px] gap-5 px-5 py-4">
-          <div className="pt-6">
-            <CodeWatermark />
-          </div>
+        <CodesContentShell>
+          <CodesLayeredContent>
+            <CodesLayoutGrid columns={`1fr ${rightW}`}>
+              <div className="flex flex-col items-center justify-center px-8 text-center">
+                <div className="max-w-[680px] rounded-2xl bg-black/55 px-10 py-10 backdrop-blur-sm">
+                  <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
+                    LeetCode Live
+                  </p>
+                  <h1 className="mb-3 text-[56px] leading-none font-black tracking-tight text-white uppercase">
+                    Stream Starting Soon
+                  </h1>
+                  <p className="mb-10 text-[12px] tracking-[0.14em] text-codes-muted uppercase">
+                    {subtext}
+                  </p>
+                  <div className="codes-widget-accent mx-auto w-[420px] rounded-2xl px-10 py-8">
+                    <CountdownBox label="Starting In" seconds={startingSoon.seconds} />
+                  </div>
+                  <div className="mt-8">
+                    <SocialRow />
+                  </div>
+                </div>
+              </div>
 
-          <div className="flex flex-col items-center justify-center text-center">
-            <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
-              LeetCode Live
-            </p>
-            <h1 className="mb-3 text-[56px] leading-none font-black tracking-tight text-white uppercase">
-              Stream Starting Soon
-            </h1>
-            <p className="mb-10 max-w-[620px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
-              {subtext}
-            </p>
-            <div className="codes-widget-accent w-[420px] rounded-2xl px-10 py-8">
-              <CountdownBox label="Starting In" seconds={startingSoon.seconds} />
-            </div>
-            <SocialRow />
-          </div>
-
-          <div className="space-y-3 overflow-y-auto">
-            <TodayPlanWidget />
-            <StatsWidget />
-            <LatestProblemWidget />
-            <ScheduleWidget />
-            <StayConnectedWidget />
-          </div>
-        </div>
+              <CodesRightSidebar showWebcam={false}>
+                <TodayPlanWidget />
+                <StatsWidget />
+                <LatestProblemWidget />
+                <ScheduleWidget />
+                <StayConnectedWidget />
+              </CodesRightSidebar>
+            </CodesLayoutGrid>
+          </CodesLayeredContent>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -99,55 +118,55 @@ export function BrbPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<BrbFooter />}>
-        <div className="relative grid h-full grid-cols-[260px_1fr_300px] gap-4 px-5 py-4">
-          <div className="pt-20">
-            <div className="codes-widget p-4">
-              <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-accent uppercase">
-                Today&apos;s Progress
-              </p>
-              <p className="mb-1 text-[28px] font-bold text-white">
-                {progressToday.current}{' '}
-                <span className="text-[18px] text-codes-muted">/ {progressToday.target}</span>
-              </p>
-              <p className="mb-3 text-[11px] text-codes-muted">Problems Solved</p>
-              <ProgressTrack current={progressToday.current} target={progressToday.target} />
+        <CodesContentShell>
+          <CodesLayoutGrid columns={`${CODES_SIDEBAR_LEFT_BRB_W}px 1fr ${rightW}`}>
+            <div className="pt-4">
+              <div className="codes-widget p-4">
+                <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-accent uppercase">
+                  Today&apos;s Progress
+                </p>
+                <p className="mb-1 text-[28px] font-bold text-white">
+                  {progressToday.current}{' '}
+                  <span className="text-[18px] text-codes-muted">/ {progressToday.target}</span>
+                </p>
+                <p className="mb-3 text-[11px] text-codes-muted">Problems Solved</p>
+                <ProgressTrack current={progressToday.current} target={progressToday.target} />
+              </div>
             </div>
-          </div>
 
-          <div className="relative flex flex-col items-center justify-center">
-            <CodeWatermark className="absolute top-0 left-0 opacity-40" />
-            <BraceDecoration />
-            <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-codes-accent/15 text-codes-accent">
-              <IconCode className="h-6 w-6" />
-            </span>
-            <h1 className="mb-2 text-[64px] leading-none font-black text-white uppercase">
-              Be Right <span className="text-codes-accent">Back</span>
-            </h1>
-            <p className="mb-8 text-[11px] tracking-[0.16em] text-codes-muted uppercase">
-              {copy.brbSubtext}
-            </p>
-            <div className="codes-widget-accent w-[400px] rounded-2xl px-8 py-7">
-              <CountdownBox
-                label={copy.brbMessage}
-                seconds={brb.seconds}
-                showBar
-                totalSeconds={300}
-              />
-              <p className="mt-4 text-center text-[10px] tracking-[0.14em] text-codes-muted uppercase">
-                Thank you for waiting!
+            <div className="relative flex flex-col items-center justify-center">
+              <BraceDecoration />
+              <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-codes-accent/15 text-codes-accent">
+                <IconCode className="h-6 w-6" />
+              </span>
+              <h1 className="mb-2 text-[64px] leading-none font-black text-white uppercase">
+                Be Right <span className="text-codes-accent">Back</span>
+              </h1>
+              <p className="mb-8 text-[11px] tracking-[0.16em] text-codes-muted uppercase">
+                {copy.brbSubtext}
               </p>
+              <div className="codes-widget-accent w-[400px] rounded-2xl px-8 py-7">
+                <CountdownBox
+                  label={copy.brbMessage}
+                  seconds={brb.seconds}
+                  showBar
+                  totalSeconds={300}
+                />
+                <p className="mt-4 text-center text-[10px] tracking-[0.14em] text-codes-muted uppercase">
+                  Thank you for waiting!
+                </p>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2.5 overflow-y-auto">
-            <CurrentProblemWidget />
-            <StreamTimeWidget />
-            <WeekGoalWidget />
-            <TodayPlanWidget />
-            <LiveCam className="h-[130px]" />
-            <StayConnectedWidget />
-          </div>
-        </div>
+            <CodesRightSidebar>
+              <CurrentProblemWidget />
+              <StreamTimeWidget />
+              <WeekGoalWidget />
+              <TodayPlanWidget />
+              <StayConnectedWidget />
+            </CodesRightSidebar>
+          </CodesLayoutGrid>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -161,34 +180,35 @@ export function BreakPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<BrbFooter />}>
-        <div className="grid h-full grid-cols-[1fr_380px] gap-5 px-6 py-5">
-          <div className="flex flex-col items-center justify-center text-center">
-            <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
-              Quick Break
-            </p>
-            <h1 className="mb-3 text-[72px] leading-none font-black text-white uppercase">
-              Break <span className="text-codes-accent">Time</span>
-            </h1>
-            <p className="mb-8 max-w-[560px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
-              {copy.breakSubtext}
-            </p>
-            <div className="codes-widget w-[320px] rounded-xl px-8 py-6">
-              <p className="mb-1 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
-                Stream Time
+        <CodesContentShell>
+          <CodesLayoutGrid columns={`1fr ${rightW}`}>
+            <div className="flex flex-col items-center justify-center text-center">
+              <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
+                Quick Break
               </p>
-              <p className="font-mono text-[48px] font-bold text-white">{stream.formatted}</p>
+              <h1 className="mb-3 text-[72px] leading-none font-black text-white uppercase">
+                Break <span className="text-codes-accent">Time</span>
+              </h1>
+              <p className="mb-8 max-w-[560px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
+                {copy.breakSubtext}
+              </p>
+              <div className="codes-widget w-[320px] rounded-xl px-8 py-6">
+                <p className="mb-1 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                  Stream Time
+                </p>
+                <p className="font-mono text-[48px] font-bold text-white">{stream.formatted}</p>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-2.5 overflow-y-auto">
-            <ProgressTodayWidget />
-            <CurrentProblemWidget />
-            <TodayPlanWidget />
-            <WeekGoalWidget />
-            <LiveCam className="h-[150px]" />
-            <StayConnectedWidget />
-          </div>
-        </div>
+            <CodesRightSidebar>
+              <ProgressTodayWidget />
+              <CurrentProblemWidget />
+              <TodayPlanWidget />
+              <WeekGoalWidget />
+              <StayConnectedWidget />
+            </CodesRightSidebar>
+          </CodesLayoutGrid>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -200,17 +220,28 @@ export function MainCodingPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<MainCodingFooter />}>
-        <div className="grid h-full grid-cols-[480px_1fr_340px] gap-3 px-3 py-3">
-          <LeetCodeMock />
-          <CodeEditorMock />
-          <div className="flex flex-col gap-2.5 overflow-hidden">
-            <CurrentProblemWidget />
-            <ProgressTodayWidget />
-            <StreamTimeWidget />
-            <WeekGoalWidget />
-            <LiveCam className="min-h-0 flex-1" />
-          </div>
-        </div>
+        <CodesContentShell>
+          <CodesLayoutGrid
+            columns={`${CODES_SIDEBAR_LEFT_MAIN_W}px 1fr ${rightW}`}
+          >
+            {obs ? (
+              <CodesScreenHole label="Screen / LeetCode" obs className="h-full" />
+            ) : (
+              <LeetCodeMock />
+            )}
+            {obs ? (
+              <CodesScreenHole label="Editor / Terminal" obs className="h-full" />
+            ) : (
+              <CodeEditorMock />
+            )}
+            <CodesRightSidebar>
+              <CurrentProblemWidget />
+              <ProgressTodayWidget />
+              <StreamTimeWidget />
+              <WeekGoalWidget />
+            </CodesRightSidebar>
+          </CodesLayoutGrid>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -222,22 +253,27 @@ export function WhiteboardPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<WhiteboardFooter />}>
-        <div className="grid h-full grid-cols-[240px_1fr_280px] gap-3 px-3 py-3">
-          <div className="flex flex-col gap-2.5 overflow-y-auto">
-            <CurrentProblemWidget />
-            <ProgressTodayWidget />
-            <WeekGoalWidget />
-            <StreamTimeWidget />
-            <TodayPlanWidget />
-          </div>
-          <WhiteboardMock />
-          <div className="flex flex-col gap-2.5 overflow-hidden">
-            <LiveCam className="h-[160px] shrink-0" />
-            <NotesWidgetPanel />
-            <ApproachWidget />
-            <TimerWidget />
-          </div>
-        </div>
+        <CodesContentShell>
+          <CodesLayoutGrid columns={`${CODES_SIDEBAR_LEFT_WB_W}px 1fr ${rightW}`}>
+            <CodesLeftSidebar width={CODES_SIDEBAR_LEFT_WB_W}>
+              <CurrentProblemWidget />
+              <ProgressTodayWidget />
+              <WeekGoalWidget />
+              <StreamTimeWidget />
+              <TodayPlanWidget />
+            </CodesLeftSidebar>
+            {obs ? (
+              <CodesScreenHole label="Whiteboard / Screen" obs className="h-full" />
+            ) : (
+              <WhiteboardMock />
+            )}
+            <CodesRightSidebar>
+              <NotesWidgetPanel />
+              <ApproachWidget />
+              <TimerWidget />
+            </CodesRightSidebar>
+          </CodesLayoutGrid>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -251,66 +287,69 @@ export function ProblemAnalysisPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell footer={<WhiteboardFooter />}>
-        <div className="grid h-full grid-cols-[300px_1fr_320px] gap-3 px-3 py-3">
-          <div className="flex flex-col gap-2.5 overflow-y-auto">
-            <CurrentProblemWidget />
-            {problem && (
-              <Widget title="Problem" accent>
-                <p className="mb-2 text-[13px] leading-snug font-semibold text-white">
-                  {problem.id}. {problem.title}
-                </p>
-                <DifficultyTag difficulty={problem.difficulty} />
-                <p className="mt-3 line-clamp-6 text-[12px] leading-relaxed text-codes-text">
-                  {problem.description}
-                </p>
-              </Widget>
-            )}
-            <ProgressTodayWidget />
-            <StreamTimeWidget />
-          </div>
+        <CodesContentShell>
+          <CodesLayoutGrid columns={`${CODES_SIDEBAR_LEFT_ANALYSIS_W}px 1fr ${rightW}`}>
+            <CodesLeftSidebar width={CODES_SIDEBAR_LEFT_ANALYSIS_W}>
+              <CurrentProblemWidget />
+              {problem && (
+                <Widget title="Problem" accent>
+                  <p className="mb-2 text-[13px] leading-snug font-semibold text-white">
+                    {problem.id}. {problem.title}
+                  </p>
+                  <DifficultyTag difficulty={problem.difficulty} />
+                  <p className="mt-3 line-clamp-6 text-[12px] leading-relaxed text-codes-text">
+                    {problem.description}
+                  </p>
+                </Widget>
+              )}
+              <ProgressTodayWidget />
+              <StreamTimeWidget />
+            </CodesLeftSidebar>
 
-          <div className="codes-glow-border flex flex-col overflow-hidden rounded-xl bg-codes-panel">
-            <div className="border-b border-codes-border px-5 py-3">
-              <p className="text-[10px] font-bold tracking-[0.16em] text-codes-accent uppercase">
-                Post-Solve Analysis
-              </p>
-              <h2 className="mt-1 text-[22px] font-bold text-white">{wb.title || 'Solution Walkthrough'}</h2>
-            </div>
-            <div className="overlay-scroll flex-1 space-y-5 overflow-y-auto p-6">
-              <section>
-                <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
-                  Approach
+            <div className="codes-glow-border flex min-h-0 flex-col overflow-hidden rounded-xl bg-codes-panel">
+              <div className="border-b border-codes-border px-5 py-3">
+                <p className="text-[10px] font-bold tracking-[0.16em] text-codes-accent uppercase">
+                  Post-Solve Analysis
                 </p>
-                <p className="text-[15px] font-semibold text-codes-accent">{wb.approach}</p>
-              </section>
-              <section>
-                <p className="mb-3 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
-                  Key Steps
-                </p>
-                <ul className="space-y-2.5">
-                  {wb.bullets.map((b, i) => (
-                    <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-codes-text">
-                      <span className="font-mono text-codes-accent">{i + 1}.</span>
-                      {b}
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <section className="grid grid-cols-3 gap-3">
-                <ComplexityCard label="Time" value="O(n)" />
-                <ComplexityCard label="Space" value="O(h)" />
-                <ComplexityCard label="Pattern" value="DFS" />
-              </section>
+                <h2 className="mt-1 text-[22px] font-bold text-white">
+                  {wb.title || 'Solution Walkthrough'}
+                </h2>
+              </div>
+              <div className="overlay-scroll flex-1 space-y-5 overflow-y-auto p-6">
+                <section>
+                  <p className="mb-2 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                    Approach
+                  </p>
+                  <p className="text-[15px] font-semibold text-codes-accent">{wb.approach}</p>
+                </section>
+                <section>
+                  <p className="mb-3 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                    Key Steps
+                  </p>
+                  <ul className="space-y-2.5">
+                    {wb.bullets.map((b, i) => (
+                      <li key={i} className="flex gap-3 text-[13px] leading-relaxed text-codes-text">
+                        <span className="font-mono text-codes-accent">{i + 1}.</span>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+                <section className="grid grid-cols-3 gap-3">
+                  <ComplexityCard label="Time" value="O(n)" />
+                  <ComplexityCard label="Space" value="O(h)" />
+                  <ComplexityCard label="Pattern" value="DFS" />
+                </section>
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-2.5 overflow-hidden">
-            <LiveCam className="h-[140px] shrink-0" />
-            <NotesWidgetPanel />
-            <ApproachWidget />
-            <TimerWidget />
-          </div>
-        </div>
+            <CodesRightSidebar>
+              <NotesWidgetPanel />
+              <ApproachWidget />
+              <TimerWidget />
+            </CodesRightSidebar>
+          </CodesLayoutGrid>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )
@@ -336,27 +375,32 @@ export function EndScreenPage() {
   return (
     <ObsCanvas obs={obs}>
       <CodesShell status="ENDED" statusDot="soon" footer={<EndScreenFooter />}>
-        <div className="relative flex h-full flex-col items-center justify-center px-12 text-center">
-          <CodeWatermark className="absolute top-8 left-8 opacity-30" />
-          <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
-            Stream Ended
-          </p>
-          <h1 className="mb-4 text-[56px] leading-none font-black tracking-tight text-white uppercase">
-            Thanks for <span className="text-codes-accent">Watching</span>
-          </h1>
-          <p className="mb-10 max-w-[640px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
-            See you next stream · {branding.schedule}
-          </p>
+        <CodesContentShell>
+          <CodesLayeredContent>
+            <div className="relative flex h-full flex-col items-center justify-center px-12 text-center">
+              <div className="max-w-[920px] rounded-2xl bg-black/60 px-12 py-10 backdrop-blur-sm">
+                <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
+                  Stream Ended
+                </p>
+                <h1 className="mb-4 text-[56px] leading-none font-black tracking-tight text-white uppercase">
+                  Thanks for <span className="text-codes-accent">Watching</span>
+                </h1>
+                <p className="mb-10 text-[12px] tracking-[0.14em] text-codes-muted uppercase">
+                  See you next stream · {branding.schedule}
+                </p>
 
-          <div className="mb-10 grid w-full max-w-[900px] grid-cols-4 gap-4">
-            <EndStat label="Today" value={`${progressToday.current}/${progressToday.target}`} sub="problems" />
-            <EndStat label="Week" value={`${weekGoal.current}/${weekGoal.target}`} sub="problems" />
-            <EndStat label="Streak" value={String(goals.streak)} sub="days" />
-            <EndStat label="Stream" value={stream.formatted} sub="duration" />
-          </div>
+                <div className="mb-10 grid grid-cols-4 gap-4">
+                  <EndStat label="Today" value={`${progressToday.current}/${progressToday.target}`} sub="problems" />
+                  <EndStat label="Week" value={`${weekGoal.current}/${weekGoal.target}`} sub="problems" />
+                  <EndStat label="Streak" value={String(goals.streak)} sub="days" />
+                  <EndStat label="Stream" value={stream.formatted} sub="duration" />
+                </div>
 
-          <SocialRow />
-        </div>
+                <SocialRow />
+              </div>
+            </div>
+          </CodesLayeredContent>
+        </CodesContentShell>
       </CodesShell>
     </ObsCanvas>
   )

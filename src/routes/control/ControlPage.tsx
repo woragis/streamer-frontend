@@ -31,6 +31,7 @@ import {
 } from '@/stores/actions'
 import { selectSortedPlan } from '@/stores/selectors'
 import { PlatformSettingsPanel } from '@/routes/control/PlatformSettingsPanel'
+import { ChatModerationPanel } from '@/routes/control/ChatModerationPanel'
 
 const roomCatalogFilter = (roomId: string): 'codes' | 'calisthenics' | 'all' => {
   if (roomId === 'codes') return 'codes'
@@ -93,6 +94,8 @@ export function ControlPage() {
           </Panel>
 
           <PlatformSettingsPanel roomId={roomId} apiSyncEnabled={apiSyncEnabled} />
+
+          {roomId === 'codes' && <ChatModerationPanel roomId={roomId} />}
 
           <Panel title="Cena ativa">
             <div className="flex flex-wrap gap-2">
