@@ -33,6 +33,7 @@ import {
 import { selectSortedPlan } from '@/stores/selectors'
 import { calContentLayoutLabel } from '@/components/calisthenics/CalContentZone'
 import { PlatformSettingsPanel } from '@/routes/control/PlatformSettingsPanel'
+import { RestreamSettingsPanel } from '@/routes/control/RestreamSettingsPanel'
 import { ChatModerationPanel } from '@/routes/control/ChatModerationPanel'
 
 const CAL_CONTENT_LAYOUTS: CalContentLayout[] = ['workout-only', 'react-primary', 'split']
@@ -98,6 +99,8 @@ export function ControlPage() {
           </Panel>
 
           <PlatformSettingsPanel roomId={roomId} apiSyncEnabled={apiSyncEnabled} />
+
+          <RestreamSettingsPanel roomId={roomId} apiSyncEnabled={apiSyncEnabled} />
 
           {(roomId === 'codes' || roomId === 'calisthenics') && (
             <ChatModerationPanel roomId={roomId} />
