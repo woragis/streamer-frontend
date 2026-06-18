@@ -31,6 +31,7 @@ import {
   updateProblem,
 } from '@/stores/actions'
 import { selectSortedPlan } from '@/stores/selectors'
+import { PlatformSettingsPanel } from '@/routes/control/PlatformSettingsPanel'
 
 const codesRoutes = [
   { path: '/codes/starting-soon', label: 'Starting Soon' },
@@ -91,6 +92,8 @@ export function ControlPage() {
               ))}
             </div>
           </Panel>
+
+          <PlatformSettingsPanel roomId={roomId} apiSyncEnabled={apiSyncEnabled} />
 
           <Panel title="Cena ativa">
             <div className="flex flex-wrap gap-2">
