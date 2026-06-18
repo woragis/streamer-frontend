@@ -157,6 +157,7 @@ export function createDefaultCodesState(): CodesState {
     copy: {
       startingSoonSubtext:
         'SOLVING PROBLEMS • IMPROVING EVERY DAY • BECOMING 1% BETTER',
+      breakSubtext: 'QUICK STRETCH • HYDRATE • BACK IN A MOMENT',
       brbSubtext: 'GRABBING WATER • STRETCHING • PREPARING THE NEXT PROBLEM',
       brbMessage: "I'LL BE BACK IN",
       upNextLabel: 'Dynamic Programming Problem',

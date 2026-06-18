@@ -17,6 +17,8 @@ import {
 } from '@/routes/codes/pages'
 import {
   CalisthenicsMainPage,
+  CalisthenicsBrbPage,
+  CalisthenicsBreakPage,
   CalisthenicsReactPage,
   CalisthenicsEndScreenPage,
 } from '@/routes/calisthenics/pages'
@@ -107,6 +109,20 @@ const calisthenicsMainRoute = createRoute({
   validateSearch: obsSearch,
 })
 
+const calisthenicsBreakRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/break',
+  component: CalisthenicsBreakPage,
+  validateSearch: obsSearch,
+})
+
+const calisthenicsBrbRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/brb',
+  component: CalisthenicsBrbPage,
+  validateSearch: obsSearch,
+})
+
 const calisthenicsReactRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/calisthenics/react',
@@ -132,6 +148,8 @@ const routeTree = rootRoute.addChildren([
   problemAnalysisRoute,
   codesEndScreenRoute,
   calisthenicsMainRoute,
+  calisthenicsBreakRoute,
+  calisthenicsBrbRoute,
   calisthenicsReactRoute,
   calisthenicsEndScreenRoute,
 ])

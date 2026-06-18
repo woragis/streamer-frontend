@@ -137,6 +137,7 @@ function codesFromLeetCode(api: LeetCodeApiState): CodesState {
     goals: api.goals ?? { dailyTarget: 5, weeklyTarget: 30, streak: 0 },
     copy: api.copy ?? {
       startingSoonSubtext: '',
+      breakSubtext: '',
       brbSubtext: '',
       brbMessage: '',
       upNextLabel: '',

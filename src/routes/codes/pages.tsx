@@ -91,10 +91,6 @@ export function StartingSoonPage() {
 }
 
 export function BrbPage() {
-  return <BreakPage />
-}
-
-export function BreakPage() {
   const obs = useObsMode()
   const brb = useBrbTimer()
   const copy = useCodesCopy()
@@ -125,7 +121,7 @@ export function BreakPage() {
               <IconCode className="h-6 w-6" />
             </span>
             <h1 className="mb-2 text-[64px] leading-none font-black text-white uppercase">
-              Break <span className="text-codes-accent">Time</span>
+              Be Right <span className="text-codes-accent">Back</span>
             </h1>
             <p className="mb-8 text-[11px] tracking-[0.16em] text-codes-muted uppercase">
               {copy.brbSubtext}
@@ -149,6 +145,47 @@ export function BreakPage() {
             <WeekGoalWidget />
             <TodayPlanWidget />
             <LiveCam className="h-[130px]" />
+            <StayConnectedWidget />
+          </div>
+        </div>
+      </CodesShell>
+    </ObsCanvas>
+  )
+}
+
+export function BreakPage() {
+  const obs = useObsMode()
+  const copy = useCodesCopy()
+  const stream = useStreamTimerDisplay()
+
+  return (
+    <ObsCanvas obs={obs}>
+      <CodesShell footer={<BrbFooter />}>
+        <div className="grid h-full grid-cols-[1fr_380px] gap-5 px-6 py-5">
+          <div className="flex flex-col items-center justify-center text-center">
+            <p className="mb-2 text-[11px] font-bold tracking-[0.2em] text-codes-accent uppercase">
+              Quick Break
+            </p>
+            <h1 className="mb-3 text-[72px] leading-none font-black text-white uppercase">
+              Break <span className="text-codes-accent">Time</span>
+            </h1>
+            <p className="mb-8 max-w-[560px] text-[12px] tracking-[0.14em] text-codes-muted uppercase">
+              {copy.breakSubtext}
+            </p>
+            <div className="codes-widget w-[320px] rounded-xl px-8 py-6">
+              <p className="mb-1 text-[10px] font-bold tracking-[0.14em] text-codes-muted uppercase">
+                Stream Time
+              </p>
+              <p className="font-mono text-[48px] font-bold text-white">{stream.formatted}</p>
+            </div>
+          </div>
+
+          <div className="space-y-2.5 overflow-y-auto">
+            <ProgressTodayWidget />
+            <CurrentProblemWidget />
+            <TodayPlanWidget />
+            <WeekGoalWidget />
+            <LiveCam className="h-[150px]" />
             <StayConnectedWidget />
           </div>
         </div>

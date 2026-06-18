@@ -114,6 +114,7 @@ export const TIMER_IDS: TimerId[] = ['stream', 'startingSoon', 'brb', 'rest', 'f
 
 export const SCENE_TIMER_MAP: Partial<Record<string, TimerId>> = {
   'starting-soon': 'startingSoon',
+  break: 'focus',
   brb: 'brb',
   workout: 'rest',
   whiteboard: 'focus',

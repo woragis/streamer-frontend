@@ -1,12 +1,19 @@
 import {
   StartingSoonPage,
   MainCodingPage,
+  BrbPage,
   BreakPage,
   WhiteboardPage,
   ProblemAnalysisPage,
   EndScreenPage,
 } from '@/routes/codes/pages'
-import { CalisthenicsMainPage, CalisthenicsReactPage, CalisthenicsEndScreenPage } from '@/routes/calisthenics/pages'
+import {
+  CalisthenicsMainPage,
+  CalisthenicsBrbPage,
+  CalisthenicsBreakPage,
+  CalisthenicsReactPage,
+  CalisthenicsEndScreenPage,
+} from '@/routes/calisthenics/pages'
 import type { SceneCatalogEntry } from '@/components/control/ScenePreviewCatalog'
 import type { Scene } from '@/stores/types'
 
@@ -31,9 +38,17 @@ export const SCENE_CATALOG: SceneCatalogEntry[] = [
     id: 'codes-break',
     label: 'Break',
     path: '/codes/break',
-    scene: 'brb',
+    scene: 'break',
     group: 'codes',
     Page: BreakPage,
+  },
+  {
+    id: 'codes-brb',
+    label: 'BRB',
+    path: '/codes/brb',
+    scene: 'brb',
+    group: 'codes',
+    Page: BrbPage,
   },
   {
     id: 'codes-whiteboard',
@@ -68,6 +83,22 @@ export const SCENE_CATALOG: SceneCatalogEntry[] = [
     Page: CalisthenicsMainPage,
   },
   {
+    id: 'cal-break',
+    label: 'Break',
+    path: '/calisthenics/break',
+    scene: 'break',
+    group: 'calisthenics',
+    Page: CalisthenicsBreakPage,
+  },
+  {
+    id: 'cal-brb',
+    label: 'BRB',
+    path: '/calisthenics/brb',
+    scene: 'brb',
+    group: 'calisthenics',
+    Page: CalisthenicsBrbPage,
+  },
+  {
     id: 'cal-react',
     label: 'React Alert',
     path: '/calisthenics/react',
@@ -89,7 +120,8 @@ export const CONTROL_SCENES: { id: Scene; label: string }[] = [
   { id: 'offline', label: 'Offline' },
   { id: 'starting-soon', label: 'Starting Soon' },
   { id: 'live', label: 'Main' },
-  { id: 'brb', label: 'Break' },
+  { id: 'break', label: 'Break' },
+  { id: 'brb', label: 'BRB' },
   { id: 'whiteboard', label: 'Whiteboard' },
   { id: 'problem-analysis', label: 'Problem Analysis' },
   { id: 'end-screen', label: 'End Screen' },

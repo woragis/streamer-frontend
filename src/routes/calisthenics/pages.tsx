@@ -1,7 +1,7 @@
 import { ObsCanvas } from '@/components/shared/ObsCanvas'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/constants/canvas'
 import { useObsMode } from '@/hooks/useObsMode'
-import { useBranding, useWorkoutStats, useSession, useTotalReps } from '@/hooks/useOverlayData'
+import { useBranding, useWorkoutStats, useSession, useTotalReps, useBrbTimer, useRestTimer } from '@/hooks/useOverlayData'
 import { brandingHandle } from '@/lib/branding'
 import type { Exercise } from '@/stores/types'
 import { IconYouTube, IconKick, IconInstagram, IconHeart, IconUser, IconDollar } from '@/components/codes/Icons'
@@ -155,6 +155,112 @@ function CalisthenicsFrame({
         </div>
       </footer>
     </div>
+  )
+}
+
+export function CalisthenicsBrbPage() {
+  const obs = useObsMode()
+  const brb = useBrbTimer()
+  const stats = useWorkoutStats()
+  const branding = useBranding()
+  const handle = brandingHandle(branding, 'calisthenics')
+  const ch = handle.replace('@', '').toUpperCase() || 'YOURCHANNEL'
+
+  return (
+    <ObsCanvas theme="calisthenics" obs={obs}>
+      <div
+        className="cal-noise flex flex-col bg-cal-bg"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+      >
+        <header className="flex h-[56px] shrink-0 items-center justify-between border-b border-cal-border bg-cal-panel/90 px-8">
+          <div className="font-display text-[32px] leading-none tracking-wider text-white">W</div>
+          <SocialChip icon={<IconKick className="h-4 w-4 text-cal-accent" />} label={`KICK /${ch}`} />
+          <div className="flex items-center gap-3">
+            <span className="h-2.5 w-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_#f59e0b] pulse-live" />
+            <span className="font-display text-[18px] tracking-[0.15em] text-amber-300 uppercase">BRB</span>
+          </div>
+        </header>
+
+        <div className="relative flex flex-1 items-center justify-center">
+          <div className="absolute inset-0 m-8 border border-cal-border/40 bg-black/20" />
+          <div className="relative z-10 text-center">
+            <p className="mb-3 text-[11px] font-bold tracking-[0.25em] text-cal-muted uppercase">
+              {stats.workoutType}
+            </p>
+            <h1 className="mb-4 font-display text-[80px] leading-none tracking-wide text-white uppercase">
+              Be Right <span className="text-cal-accent">Back</span>
+            </h1>
+            <p className="mb-10 text-[12px] tracking-[0.16em] text-cal-muted uppercase">
+              Hydrate · Stretch · Back soon
+            </p>
+            <div className="mx-auto w-[420px] rounded-2xl border border-cal-accent/40 bg-cal-panel/90 px-10 py-8">
+              <p className="mb-2 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
+                I&apos;ll be back in
+              </p>
+              <p className="font-mono text-[72px] leading-none font-bold text-cal-accent drop-shadow-[0_0_20px_var(--color-cal-accent-glow)]">
+                {brb.formatted}
+              </p>
+            </div>
+          </div>
+
+          <aside className="absolute top-0 right-0 h-full w-[280px] border-l border-cal-border bg-[#0a0a0acc]">
+            <StatRow label="Workout" value={stats.workoutType} size="lg" />
+            <StatRow label="Current" value={stats.active?.name ?? '—'} size="md" />
+            <StatRow label="Stream" value={stats.stream.formatted} size="md" />
+            <StatRow label="Total Reps" value={String(stats.totalReps)} size="md" />
+          </aside>
+        </div>
+      </div>
+    </ObsCanvas>
+  )
+}
+
+export function CalisthenicsBreakPage() {
+  const obs = useObsMode()
+  const rest = useRestTimer()
+  const stats = useWorkoutStats()
+  const next = stats.next
+
+  return (
+    <ObsCanvas theme="calisthenics" obs={obs}>
+      <div
+        className="cal-noise flex flex-col bg-cal-bg"
+        style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
+      >
+        <header className="flex h-[56px] shrink-0 items-center justify-center border-b border-cal-border bg-cal-panel/90">
+          <span className="font-display text-[16px] tracking-[0.2em] text-cal-muted uppercase">
+            {stats.workoutType} · Break
+          </span>
+        </header>
+
+        <div className="flex flex-1 flex-col items-center justify-center px-16 text-center">
+          <h1 className="mb-3 font-display text-[72px] leading-none tracking-wide text-white uppercase">
+            Break <span className="text-cal-accent">Time</span>
+          </h1>
+          <p className="mb-10 text-[12px] tracking-[0.16em] text-cal-muted uppercase">
+            Rest between sets · Breathe · Reset
+          </p>
+
+          <div className="mb-12 rounded-2xl border border-cal-border bg-cal-panel/80 px-14 py-8">
+            <p className="mb-2 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
+              Rest Timer
+            </p>
+            <p className="font-mono text-[64px] leading-none font-bold text-cal-accent">
+              {rest.formatted}
+            </p>
+          </div>
+
+          {next && (
+            <div className="rounded-xl border border-cal-border/60 bg-black/30 px-8 py-4">
+              <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
+                Up Next
+              </p>
+              <p className="font-display text-[28px] tracking-wide text-white uppercase">{next.name}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </ObsCanvas>
   )
 }
 

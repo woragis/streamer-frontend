@@ -189,6 +189,7 @@ export function migrateLegacyState(legacy: LegacyStreamState): AppState {
       copy: {
         startingSoonSubtext: legacy.startingSoonSubtext ?? defaults.codes.copy.startingSoonSubtext,
         brbSubtext: legacy.brbSubtext ?? defaults.codes.copy.brbSubtext,
+      breakSubtext: defaults.codes.copy.breakSubtext,
         brbMessage: legacy.brbMessage ?? defaults.codes.copy.brbMessage,
         upNextLabel: legacy.upNextLabel ?? defaults.codes.copy.upNextLabel,
       },

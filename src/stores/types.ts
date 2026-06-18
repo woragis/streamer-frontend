@@ -6,6 +6,7 @@ export type Scene =
   | 'offline'
   | 'starting-soon'
   | 'live'
+  | 'break'
   | 'brb'
   | 'whiteboard'
   | 'problem-analysis'
@@ -82,6 +83,7 @@ export interface Problem {
 
 export interface CodesCopy {
   startingSoonSubtext: string
+  breakSubtext: string
   brbSubtext: string
   brbMessage: string
   upNextLabel: string
