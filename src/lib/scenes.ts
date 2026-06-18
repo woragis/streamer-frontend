@@ -8,6 +8,13 @@ import {
   EndScreenPage,
 } from '@/routes/codes/pages'
 import { CodesChatPage } from '@/routes/codes/chat'
+import { CalisthenicsChatPage } from '@/routes/calisthenics/chat'
+import {
+  CodesCameraFramePage,
+  CodesChatFramePage,
+  CalisthenicsCameraFramePage,
+  CalisthenicsChatFramePage,
+} from '@/routes/shared/frame-pages'
 import {
   CalisthenicsMainPage,
   CalisthenicsBrbPage,
@@ -84,6 +91,22 @@ export const SCENE_CATALOG: SceneCatalogEntry[] = [
     Page: CodesChatPage,
   },
   {
+    id: 'codes-camera-frame',
+    label: 'Camera Frame',
+    path: '/codes/camera-frame',
+    scene: 'live',
+    group: 'codes',
+    Page: CodesCameraFramePage,
+  },
+  {
+    id: 'codes-chat-frame',
+    label: 'Chat Frame',
+    path: '/codes/chat-frame',
+    scene: 'live',
+    group: 'codes',
+    Page: CodesChatFramePage,
+  },
+  {
     id: 'cal-main',
     label: 'Main Workout',
     path: '/calisthenics/main',
@@ -122,6 +145,30 @@ export const SCENE_CATALOG: SceneCatalogEntry[] = [
     scene: 'end-screen',
     group: 'calisthenics',
     Page: CalisthenicsEndScreenPage,
+  },
+  {
+    id: 'cal-chat',
+    label: 'Live Chat',
+    path: '/calisthenics/chat',
+    scene: 'workout',
+    group: 'calisthenics',
+    Page: CalisthenicsChatPage,
+  },
+  {
+    id: 'cal-camera-frame',
+    label: 'Camera Frame',
+    path: '/calisthenics/camera-frame',
+    scene: 'workout',
+    group: 'calisthenics',
+    Page: CalisthenicsCameraFramePage,
+  },
+  {
+    id: 'cal-chat-frame',
+    label: 'Chat Frame',
+    path: '/calisthenics/chat-frame',
+    scene: 'workout',
+    group: 'calisthenics',
+    Page: CalisthenicsChatFramePage,
   },
 ]
 

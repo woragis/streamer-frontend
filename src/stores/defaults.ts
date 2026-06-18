@@ -174,6 +174,7 @@ export function createDefaultCalisthenicsState(): CalisthenicsState {
       label: 'COMPLETE THE WORKOUT',
       progress: 75,
     },
+    contentLayout: 'workout-only',
   }
 }
 

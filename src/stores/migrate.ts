@@ -202,6 +202,7 @@ export function migrateLegacyState(legacy: LegacyStreamState): AppState {
         label: legacy.todayGoalLabel ?? defaults.calisthenics.todayGoal.label,
         progress: legacy.todayGoalProgress ?? defaults.calisthenics.todayGoal.progress,
       },
+      contentLayout: defaults.calisthenics.contentLayout,
     },
   }
 }

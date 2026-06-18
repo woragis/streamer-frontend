@@ -7,7 +7,7 @@ import { useApiSync } from '@/hooks/useApiSync'
 import { STREAM_ROOMS } from '@/lib/room'
 import { SCENE_CATALOG, CONTROL_SCENES } from '@/lib/scenes'
 import { ScenePreviewCatalog } from '@/components/control/ScenePreviewCatalog'
-import type { Difficulty, TimerId } from '@/stores/types'
+import type { CalContentLayout, Difficulty, TimerId } from '@/stores/types'
 import { TIMER_IDS } from '@/stores/timers'
 import {
   addExercise,
@@ -22,6 +22,7 @@ import {
   removeProblem,
   resetTimer,
   setActiveProblem,
+  setCalContentLayout,
   setScene,
   setTimerPreset,
   startTimer,
@@ -30,8 +31,11 @@ import {
   updateProblem,
 } from '@/stores/actions'
 import { selectSortedPlan } from '@/stores/selectors'
+import { calContentLayoutLabel } from '@/components/calisthenics/CalContentZone'
 import { PlatformSettingsPanel } from '@/routes/control/PlatformSettingsPanel'
 import { ChatModerationPanel } from '@/routes/control/ChatModerationPanel'
+
+const CAL_CONTENT_LAYOUTS: CalContentLayout[] = ['workout-only', 'react-primary', 'split']
 
 const roomCatalogFilter = (roomId: string): 'codes' | 'calisthenics' | 'all' => {
   if (roomId === 'codes') return 'codes'
@@ -95,7 +99,9 @@ export function ControlPage() {
 
           <PlatformSettingsPanel roomId={roomId} apiSyncEnabled={apiSyncEnabled} />
 
-          {roomId === 'codes' && <ChatModerationPanel roomId={roomId} />}
+          {(roomId === 'codes' || roomId === 'calisthenics') && (
+            <ChatModerationPanel roomId={roomId} />
+          )}
 
           <Panel title="Cena ativa">
             <div className="flex flex-wrap gap-2">
@@ -381,6 +387,24 @@ export function ControlPage() {
           </Panel>
 
           <Panel title="Calisthenics">
+            <Field label="Layout do centro">
+              <div className="flex flex-col gap-2">
+                {CAL_CONTENT_LAYOUTS.map((layout) => (
+                  <button
+                    key={layout}
+                    type="button"
+                    onClick={() => dispatch((s) => setCalContentLayout(s, layout))}
+                    className={`rounded-lg px-3 py-2 text-left text-xs font-semibold ${
+                      state.calisthenics.contentLayout === layout
+                        ? 'bg-cal-accent text-black'
+                        : 'bg-slate-800 text-slate-300'
+                    }`}
+                  >
+                    {calContentLayoutLabel(layout)}
+                  </button>
+                ))}
+              </div>
+            </Field>
             <Field label="Workout type">
               <input
                 className={inputClass}

@@ -123,6 +123,8 @@ export interface Exercise {
   order: number
 }
 
+export type CalContentLayout = 'workout-only' | 'react-primary' | 'split'
+
 export interface CalisthenicsState {
   workoutType: string
   exercises: Exercise[]
@@ -130,6 +132,8 @@ export interface CalisthenicsState {
     label: string
     progress: number
   }
+  /** Main workout center zone: camera vs react layout. */
+  contentLayout: CalContentLayout
 }
 
 export interface AppState {

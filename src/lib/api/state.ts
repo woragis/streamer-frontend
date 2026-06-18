@@ -183,6 +183,9 @@ export async function loadRoomState(roomId: StreamRoomId): Promise<AppState> {
       workoutType: calDoc.workoutType ?? base.calisthenics.workoutType,
       exercises: calDoc.exercises ?? base.calisthenics.exercises,
       todayGoal: calDoc.todayGoal ?? base.calisthenics.todayGoal,
+      contentLayout:
+        (calDoc as { contentLayout?: CalisthenicsState['contentLayout'] }).contentLayout ??
+        base.calisthenics.contentLayout,
     }
   }
 
@@ -246,6 +249,7 @@ export async function pushRoomState(roomId: StreamRoomId, state: AppState): Prom
     workoutStatus: 'active',
     exercises: state.calisthenics.exercises,
     todayGoal: state.calisthenics.todayGoal,
+    contentLayout: state.calisthenics.contentLayout,
     timers: calisthenicsTimers(state),
   }
   try {

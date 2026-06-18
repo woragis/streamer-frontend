@@ -1,4 +1,4 @@
-import type { AppState, Difficulty, Exercise, PlanItem, Problem, Scene, TimerId } from './types'
+import type { AppState, CalContentLayout, Difficulty, Exercise, PlanItem, Problem, Scene, TimerId } from './types'
 import { createDefaultAppState } from './defaults'
 import {
   pauseTimerConfig,
@@ -317,6 +317,13 @@ export function removeExercise(state: AppState, id: string): AppState {
         .filter((e) => e.id !== id)
         .map((e, order) => ({ ...e, order })),
     },
+  }
+}
+
+export function setCalContentLayout(state: AppState, contentLayout: CalContentLayout): AppState {
+  return {
+    ...state,
+    calisthenics: { ...state.calisthenics, contentLayout },
   }
 }
 

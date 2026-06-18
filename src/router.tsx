@@ -7,6 +7,13 @@ import {
 } from '@tanstack/react-router'
 import { ControlPage } from '@/routes/control/ControlPage'
 import { CodesChatPage } from '@/routes/codes/chat'
+import { CalisthenicsChatPage } from '@/routes/calisthenics/chat'
+import {
+  CodesCameraFramePage,
+  CodesChatFramePage,
+  CalisthenicsCameraFramePage,
+  CalisthenicsChatFramePage,
+} from '@/routes/shared/frame-pages'
 import {
   StartingSoonPage,
   BrbPage,
@@ -110,6 +117,20 @@ const codesChatRoute = createRoute({
   validateSearch: obsSearch,
 })
 
+const codesCameraFrameRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/camera-frame',
+  component: CodesCameraFramePage,
+  validateSearch: obsSearch,
+})
+
+const codesChatFrameRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/codes/chat-frame',
+  component: CodesChatFramePage,
+  validateSearch: obsSearch,
+})
+
 const calisthenicsMainRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/calisthenics/main',
@@ -145,6 +166,27 @@ const calisthenicsEndScreenRoute = createRoute({
   validateSearch: obsSearch,
 })
 
+const calisthenicsChatRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/chat',
+  component: CalisthenicsChatPage,
+  validateSearch: obsSearch,
+})
+
+const calisthenicsCameraFrameRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/camera-frame',
+  component: CalisthenicsCameraFramePage,
+  validateSearch: obsSearch,
+})
+
+const calisthenicsChatFrameRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/calisthenics/chat-frame',
+  component: CalisthenicsChatFramePage,
+  validateSearch: obsSearch,
+})
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   controlRoute,
@@ -156,11 +198,16 @@ const routeTree = rootRoute.addChildren([
   problemAnalysisRoute,
   codesEndScreenRoute,
   codesChatRoute,
+  codesCameraFrameRoute,
+  codesChatFrameRoute,
   calisthenicsMainRoute,
   calisthenicsBreakRoute,
   calisthenicsBrbRoute,
   calisthenicsReactRoute,
   calisthenicsEndScreenRoute,
+  calisthenicsChatRoute,
+  calisthenicsCameraFrameRoute,
+  calisthenicsChatFrameRoute,
 ])
 
 export const router = createRouter({ routeTree })

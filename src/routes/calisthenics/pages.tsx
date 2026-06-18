@@ -1,160 +1,97 @@
 import { ObsCanvas } from '@/components/shared/ObsCanvas'
+import { CalContentZone } from '@/components/calisthenics/CalContentZone'
+import {
+  CalisthenicsContentShell,
+  CalisthenicsFooter,
+  CalisthenicsLayoutGrid,
+  CalisthenicsShell,
+  CalisthenicsWorkoutSidebar,
+  CalStatRow,
+} from '@/components/calisthenics/CalisthenicsLayoutShell'
+import { CAL_SIDEBAR_RIGHT_W } from '@/constants/cal-layout'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from '@/constants/canvas'
+import { useAppState } from '@/hooks/useAppStore'
 import { useObsMode } from '@/hooks/useObsMode'
-import { useBranding, useWorkoutStats, useSession, useTotalReps, useBrbTimer, useRestTimer } from '@/hooks/useOverlayData'
+import {
+  useBranding,
+  useWorkoutStats,
+  useSession,
+  useTotalReps,
+  useBrbTimer,
+  useRestTimer,
+} from '@/hooks/useOverlayData'
 import { brandingHandle } from '@/lib/branding'
-import type { Exercise } from '@/stores/types'
-import { IconYouTube, IconKick, IconInstagram, IconHeart, IconUser, IconDollar } from '@/components/codes/Icons'
+import { IconKick, IconHeart, IconUser, IconDollar } from '@/components/codes/Icons'
 
 export function CalisthenicsMainPage() {
   const obs = useObsMode()
   const stats = useWorkoutStats()
+  const rest = useRestTimer()
+  const branding = useBranding()
+  const contentLayout = useAppState().calisthenics.contentLayout
+  const urgentRest = rest.running && rest.seconds <= 10 && rest.seconds > 0
 
   return (
     <ObsCanvas theme="calisthenics" obs={obs}>
-      <CalisthenicsFrame
-        workoutType={stats.workoutType}
-        active={stats.active}
-        next={stats.next}
-        totalReps={stats.totalReps}
-        restFormatted={stats.rest.formatted}
-        streamFormatted={stats.stream.formatted}
-        todayGoal={stats.todayGoal}
-      />
-    </ObsCanvas>
-  )
-}
-
-function CalisthenicsFrame({
-  workoutType,
-  active,
-  next,
-  totalReps,
-  restFormatted,
-  streamFormatted,
-  todayGoal,
-}: {
-  workoutType: string
-  active?: Exercise
-  next?: Exercise
-  totalReps: number
-  restFormatted: string
-  streamFormatted: string
-  todayGoal: { label: string; progress: number }
-}) {
-  const branding = useBranding()
-  const { calisthenicsMotto: motto } = branding
-  const handle = brandingHandle(branding, 'calisthenics')
-  const ch = handle.replace('@', '').toUpperCase() || 'YOURCHANNEL'
-
-  return (
-    <div
-      className="cal-noise flex flex-col bg-cal-bg"
-      style={{ width: CANVAS_WIDTH, height: CANVAS_HEIGHT }}
-    >
-      <header className="relative z-10 flex h-[56px] shrink-0 items-center justify-between border-b border-cal-border bg-cal-panel/90 px-8">
-        <div className="font-display text-[32px] leading-none tracking-wider text-white">W</div>
-        <div className="flex items-center gap-10">
-          <SocialChip icon={<IconYouTube className="h-4 w-4 text-cal-accent" />} label={`YOUTUBE /${ch}`} />
-          <SocialChip icon={<IconKick className="h-4 w-4 text-cal-accent" />} label={`KICK /${ch}`} />
-          <SocialChip icon={<IconInstagram className="h-4 w-4 text-cal-accent" />} label={`@${ch}`} />
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="h-2.5 w-2.5 rounded-full bg-red-500 shadow-[0_0_10px_#ef4444] pulse-live" />
-          <span className="font-display text-[18px] tracking-[0.15em] text-white">LIVE</span>
-          <span className="font-mono text-[14px] text-cal-text">{streamFormatted}</span>
-        </div>
-      </header>
-
-      <div className="relative min-h-0 flex-1">
-        <div className="absolute inset-0 right-[300px] bottom-[88px] m-3 border border-[#2a2a2a] bg-transparent">
-          <span className="cal-corner-bracket cal-corner-tl" />
-          <span className="cal-corner-bracket cal-corner-tr" />
-          <span className="cal-corner-bracket cal-corner-bl" />
-          <span className="cal-corner-bracket cal-corner-br" />
-        </div>
-
-        <aside className="absolute top-0 right-0 h-full w-[300px] border-l border-cal-border bg-[#0a0a0acc]">
-          <StatRow label="Workout" value={workoutType} size="lg" />
-          <StatRow label="Current Exercise" value={active?.name ?? '—'} size="lg" underline />
-          <StatRow
-            label="Set"
-            value={
-              active ? (
-                <>
-                  <span className="text-[36px]">{active.completedSets + 1}</span>
-                  <span className="text-[20px] text-cal-muted"> / {active.sets}</span>
-                </>
-              ) : (
-                '—'
-              )
-            }
+      <CalisthenicsShell
+        footer={
+          <CalisthenicsFooter
+            motto={branding.calisthenicsMotto}
+            todayGoal={stats.todayGoal}
+            next={stats.next}
           />
-          <StatRow
-            label="Reps"
-            value={
-              active ? (
-                <>
-                  <span className="text-[36px]">{active.repsInCurrentSet}</span>
-                  <span className="text-[20px] text-cal-muted"> / {active.repTarget}</span>
-                </>
-              ) : (
-                '—'
-              )
-            }
-          />
-          <div className="border-b border-cal-border px-7 py-6">
-            <p className="mb-2 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
-              Rest Time
-            </p>
-            <p className="font-mono text-[56px] leading-none font-bold text-cal-accent drop-shadow-[0_0_20px_var(--color-cal-accent-glow)]">
-              {restFormatted}
-            </p>
-          </div>
-          <StatRow label="Total Reps" value={String(totalReps)} size="md" />
-        </aside>
-      </div>
-
-      <footer className="relative z-10 grid h-[88px] shrink-0 grid-cols-3 border-t border-cal-border bg-cal-panel/95">
-        <div className="flex items-center justify-center border-r border-cal-border px-8">
-          <p className="text-center font-script text-[34px] leading-tight text-white">
-            <span className="text-cal-accent">&ldquo;</span>
-            {motto}
-            <span className="text-cal-accent">&rdquo;</span>
-          </p>
-        </div>
-        <div className="flex flex-col justify-center border-r border-cal-border px-10">
-          <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
-            Today&apos;s Goal
-          </p>
-          <p className="mb-2 font-display text-[16px] tracking-wide text-white uppercase">
-            {todayGoal.label}
-          </p>
-          <div className="flex items-center gap-3">
-            <div className="h-[10px] flex-1 overflow-hidden rounded-sm bg-[#1a1a1a]">
-              <div
-                className="h-full bg-gradient-to-r from-[#cc5500] to-cal-accent"
-                style={{ width: `${todayGoal.progress}%` }}
+        }
+      >
+        <CalisthenicsContentShell>
+          <CalisthenicsLayoutGrid columns={`1fr ${CAL_SIDEBAR_RIGHT_W}px`}>
+            <CalContentZone layout={contentLayout} />
+            <CalisthenicsWorkoutSidebar urgentRest={urgentRest}>
+              <CalStatRow label="Workout" value={stats.workoutType} size="lg" />
+              <CalStatRow
+                label="Current Exercise"
+                value={stats.active?.name ?? '—'}
+                size="lg"
+                underline
               />
-            </div>
-            <span className="font-mono text-[13px] font-bold text-cal-accent">
-              {todayGoal.progress}%
-            </span>
-          </div>
-        </div>
-        <div className="flex flex-col justify-center px-10">
-          <p className="mb-1 text-[10px] font-bold tracking-[0.2em] text-cal-muted uppercase">
-            Up Next
-          </p>
-          <p className="font-display text-[28px] tracking-wide text-white uppercase">
-            {next?.name ?? '—'}
-          </p>
-          <p className="text-[11px] tracking-[0.12em] text-cal-muted uppercase">
-            {next ? `${next.sets} Sets` : ''}
-          </p>
-        </div>
-      </footer>
-    </div>
+              <CalStatRow
+                label="Set"
+                value={
+                  stats.active ? (
+                    <>
+                      <span className="text-[36px]">{stats.active.completedSets + 1}</span>
+                      <span className="text-[20px] text-cal-muted"> / {stats.active.sets}</span>
+                    </>
+                  ) : (
+                    '—'
+                  )
+                }
+              />
+              <CalStatRow
+                label="Reps"
+                value={
+                  stats.active ? (
+                    <>
+                      <span className="text-[36px]">{stats.active.repsInCurrentSet}</span>
+                      <span className="text-[20px] text-cal-muted"> / {stats.active.repTarget}</span>
+                    </>
+                  ) : (
+                    '—'
+                  )
+                }
+              />
+              <CalStatRow
+                label="Rest Time"
+                value={stats.rest.formatted}
+                size="hero"
+                highlight={urgentRest}
+              />
+              <CalStatRow label="Stream" value={stats.stream.formatted} />
+              <CalStatRow label="Total Reps" value={String(stats.totalReps)} />
+            </CalisthenicsWorkoutSidebar>
+          </CalisthenicsLayoutGrid>
+        </CalisthenicsContentShell>
+      </CalisthenicsShell>
+    </ObsCanvas>
   )
 }
 
